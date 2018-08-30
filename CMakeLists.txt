@@ -3,5 +3,5 @@ project(SRA)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES main.cpp data_structures.cpp)
+set(SOURCE_FILES main.cpp data_structures.cpp rules.cpp)
 add_executable(SRA ${SOURCE_FILES})
