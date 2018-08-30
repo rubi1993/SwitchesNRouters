@@ -11,17 +11,22 @@ class Rule{
 public:
     std::string source_address;
     std::string destination_address;
-    std::string source_port;
-    std::string destination_port;
+    int source_port_start, source_port_end;
+    int destination_port_start, destination_port_end;
     std::string protocol;
+    int priority;
     std::string rule_name;
 
-    Rule(std::string sa, std::string da, std::string sp, std::string dp, std::string p, std::string name):source_address(sa),
-                                                                                               destination_address(da),
-                                                                                               source_port(sp),
-                                                                                               destination_port(dp),
-                                                                                               protocol(p),
-                                                                                               rule_name(name)
+    Rule(std::string sa, std::string da, int sp_s, int sp_e, int dp_s, int dp_e, std::string p, int pri, std::string name):
+            source_address(sa),
+            destination_address(da),
+            source_port_start(sp_s),
+            source_port_end(sp_e),
+            destination_port_start(dp_s),
+            destination_port_end(dp_e),
+            protocol(p),
+            priority(pri),
+            rule_name(name)
     {}
 
 };
@@ -30,15 +35,15 @@ class PacketHeader{
 public:
     std::string source_address;
     std::string destination_address;
-    std::string source_port;
-    std::string destination_port;
+    int source_port;
+    int destination_port;
     std::string protocol;
 
-    PacketHeader(std::string sa, std::string da, std::string sp, std::string dp, std::string p, std::string name):source_address(sa),
-                                                                                                          destination_address(da),
-                                                                                                          source_port(sp),
-                                                                                                          destination_port(dp),
-                                                                                                          protocol(p)
+    PacketHeader(std::string sa, std::string da, int sp, int dp, std::string p):source_address(sa),
+                                                                                  destination_address(da),
+                                                                                  source_port(sp),
+                                                                                  destination_port(dp),
+                                                                                  protocol(p)
     {}
 
 };
