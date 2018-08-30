@@ -1,7 +1,10 @@
 #include <iostream>
 #include "rules.h"
+#include "data_structures.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    RegularTrie test;
+    test.add_rule("010*", "Test Rule 1");
+    std::cout << "Done." << std::endl;
     return 0;
 }

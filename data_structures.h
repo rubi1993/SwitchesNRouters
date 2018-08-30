@@ -6,26 +6,28 @@
 #define SRA_DATA_STRUCTURES_H
 
 #include "rules.h"
-#include "string.h"
+#include <string>
+#include <list>
 
 class RegularTrie{
     class Node {
+    public:
         Node* zero;
         Node* one;
-        std::string rule_name;
+        std::list<Rule> rules;
 
-        Node() : zero(nullptr), one(nullptr), rule_name("") {}
-        Node(std::string rule) : rule_name(rule) {}
+        Node() : zero(nullptr), one(nullptr), rules() {}
     };
 
     Node* root;
-
+public:
     RegularTrie() : root(nullptr) {}
-    std::string get_matching_rule(std::string address) const;
-    void add_rule(std::string prefix, std::string rule);
-    bool remove_rule(std::string prefix, std::string rule);
+    Rule* get_matching_rule(const PacketHeader& header) const;
+    void add_rule(std::string prefix, const Rule& rule);
+    bool remove_rule(std::string prefix, const Rule& rule);
 private:
-    Node* getPrefixNode(std::string prefix) const;
+    Node* createPrefixNode(std::string prefix);
+    Node* getPrefixNode(std::string address) const;
 
 };
 
