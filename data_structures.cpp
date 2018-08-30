@@ -4,6 +4,7 @@
 
 #include "data_structures.h"
 #include <iostream>
+#include <cmath>
 
 RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
     if(root == nullptr){
@@ -61,4 +62,21 @@ Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
 }
 
 
+int HiCuts::Node::num_of_rules() {
+    return rules.size();
+}
 
+static int HiCuts::spmf(int n) {
+    return n*SPFAC;
+}
+
+int HiCuts::Node::num_of_cuts_needed(){
+    int n=num_of_rules();
+    int nump=std::max(4,std::sqrt(n));
+    int smC=0;
+    while(smC<spmf(n)){
+        for (int i=0 ; i< n ;i++){
+            smC+=0;
+        }
+    }
+}
