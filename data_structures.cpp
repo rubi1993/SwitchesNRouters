@@ -4,7 +4,6 @@
 
 #include "data_structures.h"
 #include <iostream>
-#include <cmath>
 
 RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
     if(root == nullptr){
@@ -38,15 +37,30 @@ void RegularTrie::remove_rule(std::string prefix, const Rule &rule) {
     while(node != nullptr && node->rules.size() == 0){
         Node* temp = node;
         node = node->prev;
+        if(node != nullptr){
+            if(node->zero == temp){
+                node->zero = nullptr;
+            }else{
+                node->one = nullptr;
+            }
+        }
         delete temp;
+    }
+    if(node == nullptr){
+        root = nullptr;
+    }
+}
+
+void RegularTrie::destroySubtree(RegularTrie::Node* subroot){
+    if(subroot != nullptr){
+        destroySubtree(subroot->zero);
+        destroySubtree(subroot->one);
+        delete subroot;
     }
 }
 
 RegularTrie::~RegularTrie() {
-    Node* current =
-    while(root != nullptr){
-
-    }
+    destroySubtree(root);
 }
 
 const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
@@ -58,7 +72,7 @@ const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
     std::string address = header.destination_address;
     for(char c : address){
 
-        int best_match_priority = INT16_MAX;
+        int best_match_priority = INT32_MAX;
         for(const Rule* r : current->rules){
             if((r->source_port_start == -1 || \
                (r->source_port_start <= header.source_port && r->source_port_end >= header.source_port)) \
@@ -85,21 +99,4 @@ const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
 }
 
 
-int HiCuts::Node::num_of_rules() {
-    return rules.size();
-}
 
-static int HiCuts::spmf(int n) {
-    return n*SPFAC;
-}
-
-int HiCuts::Node::num_of_cuts_needed(){
-    int n=num_of_rules();
-    int nump=std::max(4,std::sqrt(n));
-    int smC=0;
-    while(smC<spmf(n)){
-        for (int i=0 ; i< n ;i++){
-            smC+=0;
-        }
-    }
-}

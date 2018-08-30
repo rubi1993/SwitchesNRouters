@@ -32,10 +32,11 @@ public:
     void remove_rule(std::string prefix, const Rule& rule);
 private:
     Node* createPrefixNode(std::string prefix);
+    void destroySubtree(RegularTrie::Node* subroot);
 
 };
 
-
+/*
 class EpsilonT{
     class Node {
         Node* right;
@@ -79,6 +80,6 @@ private:
     Node* getPrefixNode(std::string prefix) const;
 };
 
-
+*/
 
 #endif //SRA_DATA_STRUCTURES_H
