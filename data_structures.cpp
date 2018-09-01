@@ -108,16 +108,6 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
     std::string address = header.destination_address;
     for(char c : address){
         int best_match_priority = INT32_MAX;
-//        for(const Rule* r : current->rules){
-//            if((r->source_port_start == -1 || \
-//               (r->source_port_start <= header.source_port && r->source_port_end >= header.source_port)) \
-//               && (r->destination_port_start == -1 || \
-//                  (r->destination_port_start <= header.destination_port && r->destination_port_end >= header.destination_port)) \
-//               && (r->protocol == header.protocol || r->protocol == "*") && r->priority <= best_match_priority){
-//                best_match = r;
-//                best_match_priority = r->priority;
-//            }
-//        }
         while(current->mid!= nullptr)
         {
             if((current->rule->source_port_start == -1 || \
@@ -143,6 +133,81 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
         }
     }
     return best_match;
+}
+
+EpsilonT::Node * EpsilonT::createPrefixNode(std::string prefix){
+    if(root == nullptr){
+        root = new Node();
+    }
+    Node* current = root;
+    for(char c : prefix){
+        if(c == '0'){
+            if(current->zero == nullptr){
+                current->zero = new Node(current);
+            }
+            current = current->zero;
+        }else if(c == '1'){
+            if(current->one == nullptr){
+                current->one = new Node(current);
+            }
+            current = current->one;
+        }
+    }
+    return current;
+}
+
+
+void EpsilonT::add_rule(std::string prefix, const Rule& rule) {
+    Node* node = createPrefixNode(prefix);
+    if(node->rule!= nullptr)
+    {
+        Node* new_node=new Node(new Rule(rule));
+        node->mid=new_node;
+    }
+    else{
+        node->rule=new Rule(rule);
+    }
+}
+
+
+void EpsilonT::remove_rule(std::string prefix, const Rule &rule) {
+    Node* node = createPrefixNode(prefix);
+//    node->rules.remove(&rule);
+//    while(node != nullptr && node->rules.size() == 0){
+//        Node* temp = node;
+//        node = node->prev;
+//        if(node != nullptr){
+//            if(node->zero == temp){
+//                node->zero = nullptr;
+//            }else{
+//                node->one = nullptr;
+//            }
+//        }
+//        delete temp;
+//    }
+    while  (node->rule!=&rule)
+    {
+        node=node->mid;
+    }
+    Node *temp= nullptr;
+    if(node->mid!= nullptr)
+    {
+        temp = node->mid;
+        node->prev->mid=temp;
+    }
+    else if(node->one!= nullptr){
+        temp = node->one;
+        node->prev->one=temp;
+
+    }
+    else if(node->zero!= nullptr){
+        temp = node->zero;
+        node->prev->zero=temp;
+    }
+
+//    if(node == nullptr){
+//        root = nullptr;
+//    }
 }
 
 

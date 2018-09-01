@@ -36,8 +36,21 @@ public:
                     destination_adress_end(dae)
 
     {}
-
-
+    Rule(const Rule* rule):source_address(rule->source_address),destination_address
+    (rule->destination_address),
+    source_port_start(rule->source_port_start),
+    source_port_end(rule->source_port_end),
+    destination_port_start(rule->destination_port_start),
+    destination_port_end(rule->destination_port_end),
+    protocol(rule->protocol),
+    priority(rule->priority),
+    rule_name(rule->rule_name),
+   source_adress_start(rule->source_adress_start),
+   source_adress_end(rule->source_adress_end),
+   destination_adress_start(rule->destination_adress_start),
+   destination_adress_end(rule->destination_adress_end)
+    {}
+    bool operator!=(const Rule& a) ;
 };
 
 class PacketHeader{

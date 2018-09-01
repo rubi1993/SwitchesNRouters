@@ -39,6 +39,7 @@ private:
 class EpsilonT{
     class Node {
     public:
+        Node* prev;
         Node* mid;
         Node* one;
         Node* zero;
@@ -46,7 +47,11 @@ class EpsilonT{
         int sv;
         int bs;
         Rule* rule;
-        Node(Rule* rule) : rule(rule) {}
+        Node(Rule* rule) : rule(rule) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr),
+        size(0),sv(0),bs(0) {}
+        Node():rule(nullptr), size(0),sv(0),bs(0) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr) {}
+        Node(Node* pre) : zero(nullptr),mid(nullptr), one(nullptr), prev(pre), rule(), size(0),sv
+        (0),bs(0){}
     };
 
     Node* root;
@@ -54,8 +59,9 @@ public:
     EpsilonT() : root(nullptr) {}
     ~EpsilonT();
     const Rule* get_matching_rule(const PacketHeader& header) const;
-    void add_rule(std::string prefix, std::string rule);
-    bool remove_rule(std::string prefix, std::string rule);
+    void add_rule(std::string prefix, const Rule& rule);
+    Node* createPrefixNode(std::string prefix);
+    void remove_rule(std::string prefix, const Rule& rule);
 private:
     Node* getPrefixNode(std::string prefix) const;
 };
