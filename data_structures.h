@@ -33,6 +33,7 @@ class RegularTrie : PacketClassifier{
 public:
     RegularTrie() : root(nullptr) {}
     ~RegularTrie();
+    bool is_empty() {return root == nullptr;}
     const Rule* get_matching_rule(const PacketHeader& header) const override;
     void add_rule(std::string prefix, const Rule& rule) override;
     void remove_rule(std::string prefix, const Rule& rule) override;
@@ -50,9 +51,10 @@ class TrieOfTries : PacketClassifier{
         Node* prev;
         RegularTrie* trie;
 
-        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie() {}
-        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie() {}
+        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(new RegularTrie) {}
+        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(new RegularTrie) {}
     };
+    Node* root;
 
 public:
     const Rule* get_matching_rule(const PacketHeader& header) const override;

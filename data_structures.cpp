@@ -35,7 +35,7 @@ void RegularTrie::add_rule(std::string prefix, const Rule& rule) {
 void RegularTrie::remove_rule(std::string prefix, const Rule &rule) {
     Node* node = createPrefixNode(prefix);
     node->rules.remove(&rule);
-    while(node != nullptr && node->rules.size() == 0){
+    while(node != nullptr && node->rules.size() == 0 && node->zero == nullptr && node->one == nullptr){
         Node* temp = node;
         node = node->prev;
         if(node != nullptr){
@@ -98,6 +98,55 @@ const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
     }
     return best_match;
 }
+
+
+TrieOfTries::Node * TrieOfTries::createPrefixNode(std::string prefix){
+    if(root == nullptr){
+        root = new Node();
+    }
+    Node* current = root;
+    for(char c : prefix){
+        if(c == '0'){
+            if(current->zero == nullptr){
+                current->zero = new Node(current);
+            }
+            current = current->zero;
+        }else if(c == '1'){
+            if(current->one == nullptr){
+                current->one = new Node(current);
+            }
+            current = current->one;
+        }
+    }
+    return current;
+}
+
+void TrieOfTries::add_rule(std::string prefix, const Rule& rule) {
+    Node* node = createPrefixNode(prefix);
+    node->trie->add_rule(rule.destination_address, rule);
+}
+
+void TrieOfTries::remove_rule(std::string prefix, const Rule &rule) {
+    Node* node = createPrefixNode(prefix);
+    node->trie->remove_rule(rule.destination_address, rule);
+    while(node != nullptr && node->trie->is_empty() && node->zero == nullptr && node->one == nullptr){
+        Node* temp = node;
+        node = node->prev;
+        if(node != nullptr){
+            if(node->zero == temp){
+                node->zero = nullptr;
+            }else{
+                node->one = nullptr;
+            }
+        }
+        delete temp;
+    }
+    if(node == nullptr){
+        root = nullptr;
+    }
+}
+
+
 
 
 const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
