@@ -46,8 +46,8 @@ class EpsilonT{
         int size;
         int sv;
         int bs;
-        Rule* rule;
-        Node(Rule* rule) : rule(rule) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr),
+        const Rule* rule;
+        Node(const Rule* rule) : rule(rule) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr),
         size(0),sv(0),bs(0) {}
         Node():rule(nullptr), size(0),sv(0),bs(0) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr) {}
         Node(Node* pre) : zero(nullptr),mid(nullptr), one(nullptr), prev(pre), rule(), size(0),sv
@@ -66,27 +66,27 @@ private:
     Node* getPrefixNode(std::string prefix) const;
 };
 
-//
-//class HiCuts{
-//    static int spmf(int n);
-//    class Node {
-//        std::list<int> subspace; // represents the geometric subspace stored at v.
-//        int cuts;//the number of partitions of the subspace
-//        std::list<Rule> rules; // the rules that are contained or cuts the subspace.
-//        Node(std::list<Rule> tempRules) : subspace(), cuts(0), rules(tempRules) {}
-//        int num_of_rules();
-//        int num_of_cuts_needed();
-//    };
-//    Node* root;
-//    HiCuts() : root(nullptr) {}
-//    std::string get_matching_rule(std::string address) const;
-//    void add_rule(std::string prefix, std::string rule);
-//    bool remove_rule(std::string prefix, std::string rule);
-//private:
-//    Node* getPrefixNode(std::string prefix) const;
-//};
-//
-//
+
+class HiCuts{
+    static int spmf(int n);
+    class Node {
+        std::list<int> subspace; // represents the geometric subspace stored at v.
+        int cuts;//the number of partitions of the subspace
+        std::list<Rule> rules; // the rules that are contained or cuts the subspace.
+        Node(std::list<Rule> tempRules) : subspace(), cuts(0), rules(tempRules) {}
+        int num_of_rules();
+        int num_of_cuts_needed();
+    };
+    Node* root;
+    HiCuts() : root(nullptr) {}
+    std::string get_matching_rule(std::string address) const;
+    void add_rule(std::string prefix, std::string rule);
+    bool remove_rule(std::string prefix, std::string rule);
+private:
+    Node* getPrefixNode(std::string prefix) const;
+};
+
+
 
 #endif //SRA_DATA_STRUCTURES_H
 

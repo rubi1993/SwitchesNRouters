@@ -4,6 +4,7 @@
 
 #include "data_structures.h"
 #include <iostream>
+#include <cmath>
 
 RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
     if(root == nullptr){
@@ -159,32 +160,15 @@ EpsilonT::Node * EpsilonT::createPrefixNode(std::string prefix){
 
 void EpsilonT::add_rule(std::string prefix, const Rule& rule) {
     Node* node = createPrefixNode(prefix);
-    if(node->rule!= nullptr)
-    {
-        Node* new_node=new Node(new Rule(rule));
-        node->mid=new_node;
+    while(node->mid!= nullptr){
+        node=node->mid;
     }
-    else{
-        node->rule=new Rule(rule);
-    }
+    node->mid=new Node(&rule);
 }
 
 
 void EpsilonT::remove_rule(std::string prefix, const Rule &rule) {
     Node* node = createPrefixNode(prefix);
-//    node->rules.remove(&rule);
-//    while(node != nullptr && node->rules.size() == 0){
-//        Node* temp = node;
-//        node = node->prev;
-//        if(node != nullptr){
-//            if(node->zero == temp){
-//                node->zero = nullptr;
-//            }else{
-//                node->one = nullptr;
-//            }
-//        }
-//        delete temp;
-//    }
     while  (node->rule!=&rule)
     {
         node=node->mid;
@@ -211,22 +195,22 @@ void EpsilonT::remove_rule(std::string prefix, const Rule &rule) {
 }
 
 
-//static int HiCuts::spmf(int n) {
-//    return n*SPFAC;
-//}
-//
-//int HiCuts::Node::num_of_cuts_needed(){
-//    int n=num_of_rules();
-//    int nump=std::max(4,std::sqrt(n));
-//    int smC=0;
-//    while(smC<spmf(n))
-//    {
-//
-//        std::list<Rule>::iterator ptr;
-//        for(  ptr = rules.begin() ; ptr != rules.end() ; ptr++)
-//        {
-//            smC+=ptr.operator*().num_of_partitions_colliding(partition_size)
-//
-//        }
-//    }
-//}
+static int HiCuts::spmf(int n) {
+    return n*SPFAC;
+}
+
+int HiCuts::Node::num_of_cuts_needed(){
+    int n=num_of_rules();
+    int nump=std::max(4,std::sqrt(n));
+    int smC=0;
+    while(smC<spmf(n))
+    {
+
+        std::list<Rule>::iterator ptr;
+        for(  ptr = rules.begin() ; ptr != rules.end() ; ptr++)
+        {
+            smC+=ptr.operator*().num_of_partitions_colliding(partition_size)
+
+        }
+    }
+}
