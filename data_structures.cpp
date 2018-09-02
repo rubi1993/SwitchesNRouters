@@ -27,12 +27,14 @@ RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
     return current;
 }
 
-void RegularTrie::add_rule(std::string prefix, const Rule& rule) {
+void RegularTrie::add_rule(const Rule& rule) {
+    std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
     node->rules.push_back(&rule);
 }
 
-void RegularTrie::remove_rule(std::string prefix, const Rule &rule) {
+void RegularTrie::remove_rule(const Rule &rule) {
+    std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
     node->rules.remove(&rule);
     while(node != nullptr && node->rules.size() == 0 && node->zero == nullptr && node->one == nullptr){
@@ -121,14 +123,16 @@ TrieOfTries::Node * TrieOfTries::createPrefixNode(std::string prefix){
     return current;
 }
 
-void TrieOfTries::add_rule(std::string prefix, const Rule& rule) {
+void TrieOfTries::add_rule(const Rule& rule) {
+    std::string prefix = rule.source_address;
     Node* node = createPrefixNode(prefix);
-    node->trie->add_rule(rule.destination_address, rule);
+    node->trie->add_rule(rule);
 }
 
-void TrieOfTries::remove_rule(std::string prefix, const Rule &rule) {
+void TrieOfTries::remove_rule(const Rule &rule) {
+    std::string prefix = rule.source_address;
     Node* node = createPrefixNode(prefix);
-    node->trie->remove_rule(rule.destination_address, rule);
+    node->trie->remove_rule(rule);
     while(node != nullptr && node->trie->is_empty() && node->zero == nullptr && node->one == nullptr){
         Node* temp = node;
         node = node->prev;
@@ -146,6 +150,44 @@ void TrieOfTries::remove_rule(std::string prefix, const Rule &rule) {
     }
 }
 
+const Rule* TrieOfTries::get_matching_rule(const PacketHeader& header) const {
+    if(root == nullptr){
+        return nullptr;
+    }
+    Node* current = root;
+    const Rule* best_match = nullptr;
+    std::string address = header.source_address;
+    for(char c : address){
+        const Rule* match = current->trie->get_matching_rule(header);
+        if(match != nullptr){
+            best_match = match;
+        }
+        if(c == '0'){
+            if(current->zero == nullptr){
+                return best_match;
+            }
+            current = current->zero;
+        }else if(c == '1'){
+            if(current->one == nullptr){
+                return best_match;
+            }
+            current = current->one;
+        }
+    }
+    return best_match;
+}
+
+void TrieOfTries::destroySubtree(TrieOfTries::Node* subroot){
+    if(subroot != nullptr){
+        destroySubtree(subroot->zero);
+        destroySubtree(subroot->one);
+        delete subroot->trie;
+        delete subroot;
+    }
+}
+TrieOfTries::~TrieOfTries() {
+    destroySubtree(root);
+}
 
 
 
@@ -229,7 +271,8 @@ EpsilonT::~EpsilonT() {
     destroySubtree(root);
 }
 
-void EpsilonT::add_rule(std::string prefix, const Rule& rule) {
+void EpsilonT::add_rule(const Rule& rule) {
+    std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
     while(node->mid!= nullptr){
         node=node->mid;
@@ -243,7 +286,8 @@ void EpsilonT::add_rule(std::string prefix, const Rule& rule) {
 }
 
 
-void EpsilonT::remove_rule(std::string prefix, const Rule &rule) {
+void EpsilonT::remove_rule(const Rule &rule) {
+    std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
     while  (node->rule!=&rule)
     {
