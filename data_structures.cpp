@@ -181,15 +181,12 @@ void TrieOfTries::destroySubtree(TrieOfTries::Node* subroot){
     if(subroot != nullptr){
         destroySubtree(subroot->zero);
         destroySubtree(subroot->one);
-        delete subroot->trie;
         delete subroot;
     }
 }
 TrieOfTries::~TrieOfTries() {
     destroySubtree(root);
 }
-
-
 
 const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
     if(root == nullptr){
@@ -282,9 +279,7 @@ void EpsilonT::add_rule(const Rule& rule) {
         node=node->mid;
     }
     node->rule = &rule;
-
 }
-
 
 void EpsilonT::remove_rule(const Rule &rule) {
     std::string prefix = rule.destination_address;
@@ -313,6 +308,113 @@ void EpsilonT::remove_rule(const Rule &rule) {
 //        root = nullptr;
 //    }
 }
+
+void TreeTrieEpsilonCluster::destroySubtree(TreeTrieEpsilonCluster::Node* subroot){
+    if(subroot != nullptr){
+        destroySubtree(subroot->left);
+        destroySubtree(subroot->right);
+        delete subroot;
+    }
+}
+
+TreeTrieEpsilonCluster::~TreeTrieEpsilonCluster() {
+    destroySubtree(root);
+}
+
+void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
+    std::string prefix = rule.source_address;
+    if(root == nullptr){
+        if(prefix[prefix.length() - 1] == '*'){
+            prefix.erase(prefix.length() - 1);
+        }
+        root = new Node();
+        root->trie->add_rule(rule);
+        root->prefix = prefix;
+        return;
+    }
+    if(prefix[prefix.length() - 1] == '*'){
+        prefix.erase(prefix.length() - 1);
+    }
+    while(prefix.length() < root->prefix.length()){
+        prefix += "0";
+    }
+    Node* current = root;
+    while(current != nullptr){
+        if(prefix < current->prefix){
+            if(current->left == nullptr){
+                current->left = new Node(current);
+                current->left->trie->add_rule(rule);
+                current->left->prefix = prefix;
+                return;
+            }
+            current = current->left;
+        }else{
+            if(current->right == nullptr){
+                current->right = new Node(current);
+                current->right->trie->add_rule(rule);
+                current->right->prefix = prefix;
+                return;
+            }
+            current = current->right;
+        }
+    }
+}
+
+void TreeTrieEpsilonCluster::remove_rule(const Rule& rule) {
+    if(root == nullptr){
+        return;
+    }
+    std::string prefix = rule.source_address;
+    if(prefix[prefix.length() - 1] == '*'){
+        prefix.erase(prefix.length() - 1);
+    }
+    while(prefix.length() < root->prefix.length()){
+        prefix += "0";
+    }
+    Node* current = root;
+    while(current!= nullptr && current->prefix != prefix){
+        if(prefix < current->prefix){
+            current = current->left;
+        }else{
+            current = current->right;
+        }
+    }
+    if(current != nullptr){
+        current->trie->remove_rule(rule);
+        while(current != nullptr && current->trie->is_empty() && current->left == nullptr && current->right == nullptr){
+            Node* temp = current;
+            current = current->prev;
+            if(current != nullptr){
+                if(current->left == temp){
+                    current->left = nullptr;
+                }else{
+                    current->right = nullptr;
+                }
+            }
+            delete temp;
+        }
+    }
+}
+
+const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header) const {
+    if(root == nullptr){
+        return nullptr;
+    }
+    std::string prefix = header.source_address.substr(0, root->prefix.length());
+    Node* current = root;
+    while(current!= nullptr && current->prefix != prefix){
+        if(prefix < current->prefix){
+            current = current->left;
+        }else{
+            current = current->right;
+        }
+    }
+    if(current != nullptr){
+        return current->trie->get_matching_rule(header);
+    }
+}
+
+
 
 //
 //static int HiCuts::spmf(int n) {

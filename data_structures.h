@@ -53,6 +53,7 @@ class TrieOfTries : PacketClassifier{
 
         Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(new RegularTrie) {}
         Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(new RegularTrie) {}
+        ~Node() {delete trie;}
     };
     Node* root;
 
@@ -100,29 +101,32 @@ private:
 };
 
 
-class TreeTrieEpsilon : PacketClassifier{
+class TreeTrieEpsilonCluster : PacketClassifier{
     class Node {
     public:
-        Node* zero;
-        Node* one;
+        Node* left;
+        Node* right;
         Node* prev;
+        std::string prefix;
         EpsilonT* trie;
 
-        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(new EpsilonT) {}
-        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(new EpsilonT) {}
+        Node() : left(nullptr), right(nullptr), prev(nullptr), trie(new EpsilonT) {}
+        Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT) {}
+        ~Node() {delete trie;}
     };
     Node* root;
 
 public:
-    TreeTrieEpsilon() : root(nullptr) {}
-    ~TreeTrieEpsilon();
+    TreeTrieEpsilonCluster() : root(nullptr) {}
+    ~TreeTrieEpsilonCluster();
     const Rule* get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
 private:
-    Node* createPrefixNode(std::string prefix);
-    void destroySubtree(TreeTrieEpsilon::Node* subroot);
+    void destroySubtree(TreeTrieEpsilonCluster::Node* subroot);
 };
+
+
 
 
 
