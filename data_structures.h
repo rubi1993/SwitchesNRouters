@@ -79,16 +79,17 @@ class EpsilonT : PacketClassifier{
         int bs;
         const Rule* rule;
         Node(const Rule* rule) : rule(rule) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr),
-        size(0),sv(0),bs(0) {}
+                                 size(0),sv(0),bs(0) {}
         Node():rule(nullptr), size(0),sv(0),bs(0) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr) {}
         Node(Node* pre) : zero(nullptr),mid(nullptr), one(nullptr), prev(pre), rule(), size(0),sv
-        (0),bs(0){}
+                (0),bs(0){}
     };
 
     Node* root;
 public:
     EpsilonT() : root(nullptr) {}
     ~EpsilonT();
+    bool is_empty() {return root == nullptr;}
     void destroySubtree(Node* subroot);
     const Rule* get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
@@ -97,6 +98,32 @@ public:
 private:
     Node* getPrefixNode(std::string prefix) const;
 };
+
+
+class TreeTrieEpsilon : PacketClassifier{
+    class Node {
+    public:
+        Node* zero;
+        Node* one;
+        Node* prev;
+        EpsilonT* trie;
+
+        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(new EpsilonT) {}
+        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(new EpsilonT) {}
+    };
+    Node* root;
+
+public:
+    TreeTrieEpsilon() : root(nullptr) {}
+    ~TreeTrieEpsilon();
+    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    void add_rule(const Rule& rule) override;
+    void remove_rule(const Rule& rule) override;
+private:
+    Node* createPrefixNode(std::string prefix);
+    void destroySubtree(TreeTrieEpsilon::Node* subroot);
+};
+
 
 
 class HiCuts : PacketClassifier{

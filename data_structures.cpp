@@ -72,16 +72,15 @@ const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
     }
     Node* current = root;
     const Rule* best_match = nullptr;
+    int best_match_priority = 0;
     std::string address = header.destination_address;
     for(char c : address){
-
-        int best_match_priority = INT32_MAX;
         for(const Rule* r : current->rules){
             if((r->source_port_start == -1 || \
                (r->source_port_start <= header.source_port && r->source_port_end >= header.source_port)) \
                && (r->destination_port_start == -1 || \
                   (r->destination_port_start <= header.destination_port && r->destination_port_end >= header.destination_port)) \
-               && (r->protocol == header.protocol || r->protocol == "*") && r->priority <= best_match_priority){
+               && (r->protocol == header.protocol || r->protocol == "*") && r->priority >= best_match_priority){
                 best_match = r;
                 best_match_priority = r->priority;
             }
@@ -156,10 +155,11 @@ const Rule* TrieOfTries::get_matching_rule(const PacketHeader& header) const {
     }
     Node* current = root;
     const Rule* best_match = nullptr;
+    int best_match_priority = 0;
     std::string address = header.source_address;
     for(char c : address){
         const Rule* match = current->trie->get_matching_rule(header);
-        if(match != nullptr){
+        if(match != nullptr && best_match_priority <= match->priority){
             best_match = match;
         }
         if(c == '0'){
@@ -199,7 +199,7 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
     const Rule* best_match = nullptr;
     std::string address = header.destination_address;
     for(char c : address){
-        int best_match_priority = INT32_MAX;
+        int best_match_priority = 0;
         while(current->mid!= nullptr)
         {
             if((current->rule->source_port_start == -1 || \
@@ -217,7 +217,7 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
                (current->rule->source_port_start <= header.source_port && current->rule->source_port_end >= header.source_port)) \
                && (current->rule->destination_port_start == -1 || \
                   (current->rule->destination_port_start <= header.destination_port && current->rule->destination_port_end >= header.destination_port)) \
-               && (current->rule->protocol == header.protocol || current->rule->protocol == "*") && current->rule->priority <= best_match_priority){
+               && (current->rule->protocol == header.protocol || current->rule->protocol == "*") && current->rule->priority >= best_match_priority){
                 best_match = current->rule;
                 best_match_priority = current->rule->priority;
             }
