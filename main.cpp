@@ -3,7 +3,7 @@
 #include "data_structures.h"
 
 int main() {
-    RegularTrie test;
+    EpsilonT test;
     Rule test_rule("*", "010*", 22, 34, -1, -1, "TCP", 1, "Rule 1");
     Rule test_rule2("*", "1111*", 22, 34, -1, -1, "TCP", 1, "Rule 2");
     test.add_rule("010*", test_rule);

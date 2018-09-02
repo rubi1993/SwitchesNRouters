@@ -18,7 +18,6 @@ class RegularTrie{
         Node* one;
         Node* prev;
         std::list<const Rule*> rules;
-
         Node() : zero(nullptr), one(nullptr), prev(nullptr), rules() {}
         Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), rules() {}
     };
@@ -58,6 +57,7 @@ class EpsilonT{
 public:
     EpsilonT() : root(nullptr) {}
     ~EpsilonT();
+    void destroySubtree(Node* subroot);
     const Rule* get_matching_rule(const PacketHeader& header) const;
     void add_rule(std::string prefix, const Rule& rule);
     Node* createPrefixNode(std::string prefix);

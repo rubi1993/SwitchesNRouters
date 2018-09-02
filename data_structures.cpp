@@ -121,6 +121,16 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
             }
             current=current->mid;
         }
+        if(current->rule!= nullptr){
+            if((current->rule->source_port_start == -1 || \
+               (current->rule->source_port_start <= header.source_port && current->rule->source_port_end >= header.source_port)) \
+               && (current->rule->destination_port_start == -1 || \
+                  (current->rule->destination_port_start <= header.destination_port && current->rule->destination_port_end >= header.destination_port)) \
+               && (current->rule->protocol == header.protocol || current->rule->protocol == "*") && current->rule->priority <= best_match_priority){
+                best_match = current->rule;
+                best_match_priority = current->rule->priority;
+            }
+        }
         if(c == '0'){
             if(current->zero == nullptr){
                 return best_match;
@@ -157,13 +167,24 @@ EpsilonT::Node * EpsilonT::createPrefixNode(std::string prefix){
     return current;
 }
 
+void EpsilonT::destroySubtree(EpsilonT::Node* subroot){
+    if(subroot != nullptr){
+        destroySubtree(subroot->zero);
+        destroySubtree(subroot->one);
+        delete subroot;
+    }
+}
+
+EpsilonT::~EpsilonT() {
+    destroySubtree(root);
+}
 
 void EpsilonT::add_rule(std::string prefix, const Rule& rule) {
     Node* node = createPrefixNode(prefix);
     while(node->mid!= nullptr){
         node=node->mid;
     }
-    node->mid=new Node(&rule);
+    node->rule=&rule;
 }
 
 
@@ -188,29 +209,25 @@ void EpsilonT::remove_rule(std::string prefix, const Rule &rule) {
         temp = node->zero;
         node->prev->zero=temp;
     }
+}
 
-//    if(node == nullptr){
-//        root = nullptr;
+//
+//static int HiCuts::spmf(int n) {
+//    return n*SPFAC;
+//}
+//
+//int HiCuts::Node::num_of_cuts_needed(){
+//    int n=num_of_rules();
+//    int nump=std::max(4,std::sqrt(n));
+//    int smC=0;
+//    while(smC<spmf(n))
+//    {
+//
+//        std::list<Rule>::iterator ptr;
+//        for(  ptr = rules.begin() ; ptr != rules.end() ; ptr++)
+//        {
+//            smC+=ptr.operator*().num_of_partitions_colliding(partition_size)
+//
+//        }
 //    }
-}
-
-
-static int HiCuts::spmf(int n) {
-    return n*SPFAC;
-}
-
-int HiCuts::Node::num_of_cuts_needed(){
-    int n=num_of_rules();
-    int nump=std::max(4,std::sqrt(n));
-    int smC=0;
-    while(smC<spmf(n))
-    {
-
-        std::list<Rule>::iterator ptr;
-        for(  ptr = rules.begin() ; ptr != rules.end() ; ptr++)
-        {
-            smC+=ptr.operator*().num_of_partitions_colliding(partition_size)
-
-        }
-    }
-}
+//}
