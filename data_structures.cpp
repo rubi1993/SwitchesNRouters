@@ -108,6 +108,7 @@ void RegularTrie::removeSubtreeLeaves(RegularTrie::Node *subroot, std::list<cons
         for(const Rule* rule : subroot->rules) {
             rule_list.push_back(rule);
         }
+        subroot->rules.clear();
         while(subroot != nullptr && subroot->rules.size() == 0 && subroot->zero == nullptr && subroot->one == nullptr){
             Node* temp = subroot;
             subroot = subroot->prev;
@@ -117,6 +118,8 @@ void RegularTrie::removeSubtreeLeaves(RegularTrie::Node *subroot, std::list<cons
                 }else{
                     subroot->one = nullptr;
                 }
+            }else{
+                root = nullptr;
             }
             delete temp;
         }
