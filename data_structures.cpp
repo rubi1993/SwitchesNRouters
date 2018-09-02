@@ -171,6 +171,7 @@ void EpsilonT::destroySubtree(EpsilonT::Node* subroot){
     if(subroot != nullptr){
         destroySubtree(subroot->zero);
         destroySubtree(subroot->one);
+        destroySubtree(subroot->mid);
         delete subroot;
     }
 }
@@ -184,7 +185,12 @@ void EpsilonT::add_rule(std::string prefix, const Rule& rule) {
     while(node->mid!= nullptr){
         node=node->mid;
     }
-    node->rule=&rule;
+    if(node->rule != nullptr){
+        node->mid=new Node(&rule);
+        node=node->mid;
+    }
+    node->rule = &rule;
+
 }
 
 
@@ -209,6 +215,10 @@ void EpsilonT::remove_rule(std::string prefix, const Rule &rule) {
         temp = node->zero;
         node->prev->zero=temp;
     }
+
+//    if(node == nullptr){
+//        root = nullptr;
+//    }
 }
 
 //

@@ -11,13 +11,20 @@
 
 #define SPFAC 4
 
-class RegularTrie{
+class PacketClassifier{
+    virtual const Rule* get_matching_rule(const PacketHeader& header) const = 0;
+    virtual void add_rule(std::string prefix, const Rule& rule) = 0;
+    virtual void remove_rule(std::string prefix, const Rule& rule) = 0;
+};
+
+class RegularTrie : PacketClassifier{
     class Node {
     public:
         Node* zero;
         Node* one;
         Node* prev;
         std::list<const Rule*> rules;
+
         Node() : zero(nullptr), one(nullptr), prev(nullptr), rules() {}
         Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), rules() {}
     };
@@ -35,7 +42,7 @@ private:
 
 };
 
-class EpsilonT{
+class EpsilonT : PacketClassifier{
     class Node {
     public:
         Node* prev;
@@ -67,7 +74,7 @@ private:
 };
 
 
-class HiCuts{
+class HiCuts : PacketClassifier{
     static int spmf(int n);
     class Node {
         std::list<int> subspace; // represents the geometric subspace stored at v.
