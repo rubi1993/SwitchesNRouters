@@ -30,8 +30,10 @@ class RegularTrie : PacketClassifier{
     };
 
     Node* root;
+    bool use_source_address;
 public:
-    RegularTrie() : root(nullptr) {}
+    RegularTrie() : root(nullptr), use_source_address(false) {}
+    RegularTrie(bool flag) : root(nullptr), use_source_address(flag) {};
     ~RegularTrie();
     bool is_empty() {return root == nullptr;}
     const Rule* get_matching_rule(const PacketHeader& header) const override;

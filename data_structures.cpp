@@ -28,13 +28,13 @@ RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
 }
 
 void RegularTrie::add_rule(const Rule& rule) {
-    std::string prefix = rule.destination_address;
+    std::string prefix = use_source_address ? rule.source_address : rule.destination_address;
     Node* node = createPrefixNode(prefix);
     node->rules.push_back(&rule);
 }
 
 void RegularTrie::remove_rule(const Rule &rule) {
-    std::string prefix = rule.destination_address;
+    std::string prefix = use_source_address ? rule.source_address : rule.destination_address;
     Node* node = createPrefixNode(prefix);
     node->rules.remove(&rule);
     while(node != nullptr && node->rules.size() == 0 && node->zero == nullptr && node->one == nullptr){
@@ -73,7 +73,7 @@ const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
     Node* current = root;
     const Rule* best_match = nullptr;
     int best_match_priority = 0;
-    std::string address = header.destination_address;
+    std::string address = use_source_address ? header.source_address : header.destination_address;
     for(char c : address){
         for(const Rule* r : current->rules){
             if((r->source_port_start == -1 || \
@@ -109,20 +109,18 @@ void RegularTrie::removeSubtreeLeaves(RegularTrie::Node *subroot, std::list<cons
             rule_list.push_back(rule);
         }
         subroot->rules.clear();
-        while(subroot != nullptr && subroot->rules.size() == 0 && subroot->zero == nullptr && subroot->one == nullptr){
-            Node* temp = subroot;
-            subroot = subroot->prev;
-            if(subroot != nullptr){
-                if(subroot->zero == temp){
-                    subroot->zero = nullptr;
-                }else{
-                    subroot->one = nullptr;
-                }
+        Node* temp = subroot;
+        subroot = subroot->prev;
+        if(subroot != nullptr){
+            if(subroot->zero == temp){
+                subroot->zero = nullptr;
             }else{
-                root = nullptr;
+                subroot->one = nullptr;
             }
-            delete temp;
+        }else{
+            root = nullptr;
         }
+        delete temp;
     }else{
         removeSubtreeLeaves(subroot->zero, rule_list);
         removeSubtreeLeaves(subroot->one, rule_list);
@@ -451,7 +449,7 @@ const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header
 }
 
 TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table) {
-    RegularTrie* trie = new RegularTrie();
+    RegularTrie* trie = new RegularTrie(true);
     for(const Rule* rule : rule_table){
         trie->add_rule(rule);
     }
