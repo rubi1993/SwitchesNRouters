@@ -214,12 +214,15 @@ void TrieOfTries::destroySubtree(TrieOfTries::Node* subroot){
     if(subroot != nullptr){
         destroySubtree(subroot->zero);
         destroySubtree(subroot->one);
+        delete subroot->trie;
         delete subroot;
     }
 }
 TrieOfTries::~TrieOfTries() {
     destroySubtree(root);
 }
+
+
 
 const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
     if(root == nullptr){
@@ -265,6 +268,86 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
         }
     }
     return best_match;
+}
+void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
+    bool one_child=false;
+    bool have_child=false;
+    bool is_root=false;
+    if (root== nullptr){
+        return;
+    }
+    if(root->id==node->id){
+        is_root=true;
+    }
+    Node* cur_node=root;
+    if(cur_node->one!= nullptr or cur_node->zero!= nullptr){
+        have_child=true;
+    }
+    if(cur_node->one== nullptr and cur_node->zero!= nullptr or cur_node->one!= nullptr and cur_node->zero== nullptr){
+        one_child=true;
+    }
+    if(cur_node->rule== nullptr and one_child){
+        if(is_root){
+            if(cur_node->zero!= nullptr){
+                root=cur_node->zero;
+                root->sv+=1;
+                root->bs+='0';
+
+            }
+            else if(cur_node->one!= nullptr){
+                root=cur_node->one;
+                root->sv+=1;
+                root->bs+='1';
+            }
+            is_root=false;
+        }
+    }
+    visited[node->id]=true;
+    if(node->mid!= nullptr and !visited.count(node->mid->id)){
+        DFSUtil(node->mid,visited);
+    }
+    if(node->one!= nullptr and !visited.count(node->one->id)){
+        DFSUtil(node->one,visited);
+    }
+    if(node->zero!= nullptr and !visited.count(node->zero->id)){
+        DFSUtil(node->zero,visited);
+    }
+}
+void EpsilonT::path_compress() {
+//    bool one_child=false;
+//    bool have_child=false;
+//    bool is_root=false;
+//    if (root== nullptr){
+//        return;
+//    }
+//    else{
+//        is_root=true;
+//    }
+//    Node* cur_node=root;
+//    if(cur_node->one!= nullptr or cur_node->zero!= nullptr){
+//        have_child=true;
+//    }
+//    if(cur_node->one== nullptr and cur_node->zero!= nullptr or cur_node->one!= nullptr and cur_node->zero== nullptr){
+//        one_child=true;
+//    }
+//    if(cur_node->rule== nullptr and one_child){
+//        if(is_root){
+//            if(cur_node->zero!= nullptr){
+//                root=cur_node->zero;
+//                root->sv+=1;
+//                root->bs+='0';
+//
+//            }
+//            else if(cur_node->one!= nullptr){
+//                root=cur_node->one;
+//                root->sv+=1;
+//                root->bs+='1';
+//            }
+//            is_root=false;
+//        }
+//    }
+
+
 }
 
 EpsilonT::Node * EpsilonT::createPrefixNode(std::string prefix){
@@ -312,7 +395,9 @@ void EpsilonT::add_rule(const Rule& rule) {
         node=node->mid;
     }
     node->rule = &rule;
+
 }
+
 
 void EpsilonT::remove_rule(const Rule &rule) {
     std::string prefix = rule.destination_address;
@@ -336,10 +421,35 @@ void EpsilonT::remove_rule(const Rule &rule) {
         temp = node->zero;
         node->prev->zero=temp;
     }
+}
 
-//    if(node == nullptr){
-//        root = nullptr;
-//    }
+
+
+const Rule* TSS::get_matching_rule(const PacketHeader &header){
+    int dest_num= int_counter(header.destination_address);
+    int source_num=int_counter(header.source_address);
+    int best_match_priority = INT32_MAX;
+    const Rule* best_match= nullptr;
+    std::tuple<int,int> tup(source_num,dest_num);
+    if(adress_map[tup].size()==0)
+    {
+        return nullptr;
+    }
+    else{
+        std::list<const Rule*>::iterator it;
+        for(it = adress_map[tup].begin(); it != adress_map[tup].end(); ++it){
+            const Rule* current=it.operator*();
+            if((current->source_port_start == -1 || \
+               (current->source_port_start <= header.source_port && current->source_port_end >= header.source_port)) \
+               && (current->destination_port_start == -1 || \
+                  (current->destination_port_start <= header.destination_port && current->destination_port_end >= header.destination_port)) \
+               && (current->protocol == header.protocol || current->protocol == "*") && current->priority <= best_match_priority){
+                best_match = current;
+                best_match_priority = current->priority;
+            }
+        }
+        }
+    return best_match;
 }
 
 void TreeTrieEpsilonCluster::destroySubtree(TreeTrieEpsilonCluster::Node* subroot){
@@ -490,6 +600,31 @@ void TreeTrieEpsilon::remove_rule(const Rule &rule) {
     //placeholder
 }
 
+void TSS::add_rule(const Rule &rule) {
+    int dest_num= int_counter(rule.destination_address);
+    int source_num=int_counter(rule.source_address);
+    std::tuple<int,int> tup(source_num,dest_num);
+    adress_map[tup].push_back(&rule);
+}
+
+void TSS::remove_rule(const Rule &rule) {
+    int dest_num= int_counter(rule.destination_address);
+    int source_num=int_counter(rule.source_address);
+    std::tuple<int,int> tup(source_num,dest_num);
+    adress_map[tup].remove(&rule);
+}
+
+
+int int_counter(const std::string str){
+    int result=0;
+    for (size_t i = 0; i < str.size(); i++)
+    {
+        char currentChar = str[i];
+        if (currentChar !='*')
+            result += 1;
+    }
+    return result;
+}
 //
 //static int HiCuts::spmf(int n) {
 //    return n*SPFAC;

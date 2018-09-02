@@ -8,8 +8,10 @@
 #include "rules.h"
 #include <string>
 #include <list>
+#include <map>
 
 #define SPFAC 4
+int int_counter(std::string str);
 
 class PacketClassifier{
     virtual const Rule* get_matching_rule(const PacketHeader& header) const = 0;
@@ -73,26 +75,29 @@ private:
 };
 
 class EpsilonT : PacketClassifier{
+public:
     class Node {
     public:
         Node* prev;
         Node* mid;
         Node* one;
         Node* zero;
+        int id;
         int size;
         int sv;
-        int bs;
+        std::string bs;
         const Rule* rule;
         Node(const Rule* rule) : rule(rule) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr),
-                                 size(0),sv(0),bs(0) {}
-        Node():rule(nullptr), size(0),sv(0),bs(0) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr) {}
+                                 size(0),sv(0),bs(0) {id=id_counter;id_counter+=1;}
+        Node():rule(nullptr), size(0),sv(0),bs() ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr) {id=id_counter;id_counter+=1;}
         Node(Node* pre) : zero(nullptr),mid(nullptr), one(nullptr), prev(pre), rule(), size(0),sv
-                (0),bs(0){}
+                (0),bs(){id=id_counter;id_counter+=1;}
     };
 
     Node* root;
+    static int id_counter;
 public:
-    EpsilonT() : root(nullptr) {}
+    EpsilonT() : root(nullptr),id_counter(0) {}
     ~EpsilonT();
     bool is_empty() {return root == nullptr;}
     void destroySubtree(Node* subroot);
@@ -100,6 +105,9 @@ public:
     void add_rule(const Rule& rule) override;
     Node* createPrefixNode(std::string prefix);
     void remove_rule(const Rule& rule) override;
+    void DFSUtil(Node * node,std::map<int,bool>);
+    void path_compress();
+
 private:
     Node* getPrefixNode(std::string prefix) const;
 };
@@ -159,6 +167,16 @@ class HiCuts : PacketClassifier{
     void remove_rule(const Rule& rule) override;
 private:
     Node* getPrefixNode(std::string prefix) const;
+};
+
+class TSS{
+    std::map<std::tuple<int,int>,std::list<const Rule*>> adress_map;
+public:
+    TSS() : adress_map() {}
+    ~TSS(){};
+    const Rule* get_matching_rule(const PacketHeader& header);
+    void add_rule(const Rule& rule);
+    void remove_rule(const Rule& rule);
 };
 
 
