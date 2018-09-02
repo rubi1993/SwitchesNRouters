@@ -33,13 +33,34 @@ class RegularTrie : PacketClassifier{
 public:
     RegularTrie() : root(nullptr) {}
     ~RegularTrie();
-    const Rule* get_matching_rule(const PacketHeader& header) const;
-    void add_rule(std::string prefix, const Rule& rule);
-    void remove_rule(std::string prefix, const Rule& rule);
+    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    void add_rule(std::string prefix, const Rule& rule) override;
+    void remove_rule(std::string prefix, const Rule& rule) override;
 private:
     Node* createPrefixNode(std::string prefix);
     void destroySubtree(RegularTrie::Node* subroot);
 
+};
+
+class TrieOfTries : PacketClassifier{
+    class Node {
+    public:
+        Node* zero;
+        Node* one;
+        Node* prev;
+        RegularTrie* trie;
+
+        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie() {}
+        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie() {}
+    };
+
+public:
+    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    void add_rule(std::string prefix, const Rule& rule) override;
+    void remove_rule(std::string prefix, const Rule& rule) override;
+private:
+    Node* createPrefixNode(std::string prefix);
+    void destroySubtree(TrieOfTries::Node* subroot);
 };
 
 class EpsilonT : PacketClassifier{
@@ -65,10 +86,10 @@ public:
     EpsilonT() : root(nullptr) {}
     ~EpsilonT();
     void destroySubtree(Node* subroot);
-    const Rule* get_matching_rule(const PacketHeader& header) const;
-    void add_rule(std::string prefix, const Rule& rule);
+    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    void add_rule(std::string prefix, const Rule& rule) override;
     Node* createPrefixNode(std::string prefix);
-    void remove_rule(std::string prefix, const Rule& rule);
+    void remove_rule(std::string prefix, const Rule& rule) override;
 private:
     Node* getPrefixNode(std::string prefix) const;
 };
@@ -86,9 +107,9 @@ class HiCuts : PacketClassifier{
     };
     Node* root;
     HiCuts() : root(nullptr) {}
-    std::string get_matching_rule(std::string address) const;
-    void add_rule(std::string prefix, std::string rule);
-    bool remove_rule(std::string prefix, std::string rule);
+    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    void add_rule(std::string prefix, const Rule& rule) override;
+    void remove_rule(std::string prefix, const Rule& rule) override;
 private:
     Node* getPrefixNode(std::string prefix) const;
 };
