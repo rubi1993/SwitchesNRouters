@@ -100,6 +100,38 @@ const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
     return best_match;
 }
 
+void RegularTrie::removeSubtreeLeaves(RegularTrie::Node *subroot, std::list<const Rule*>& rule_list) {
+    if(subroot == nullptr){
+        return;
+    }
+    if(subroot->zero == nullptr && subroot->one == nullptr){
+        for(const Rule* rule : subroot->rules) {
+            rule_list.push_back(rule);
+        }
+        while(subroot != nullptr && subroot->rules.size() == 0 && subroot->zero == nullptr && subroot->one == nullptr){
+            Node* temp = subroot;
+            subroot = subroot->prev;
+            if(subroot != nullptr){
+                if(subroot->zero == temp){
+                    subroot->zero = nullptr;
+                }else{
+                    subroot->one = nullptr;
+                }
+            }
+            delete temp;
+        }
+    }else{
+        removeSubtreeLeaves(subroot->zero, rule_list);
+        removeSubtreeLeaves(subroot->one, rule_list);
+    }
+}
+
+std::list<const Rule*> RegularTrie::remove_leaves() {
+    std::list<const Rule*> rule_list;
+    removeSubtreeLeaves(root, rule_list);
+    return rule_list;
+}
+
 
 TrieOfTries::Node * TrieOfTries::createPrefixNode(std::string prefix){
     if(root == nullptr){
@@ -400,9 +432,9 @@ const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header
     if(root == nullptr){
         return nullptr;
     }
-    std::string prefix = header.source_address.substr(0, root->prefix.length());
+    std::string prefix = header.source_address;
     Node* current = root;
-    while(current!= nullptr && current->prefix != prefix){
+    while(current!= nullptr && current->prefix != prefix.substr(0, current->prefix.length())){
         if(prefix < current->prefix){
             current = current->left;
         }else{
@@ -412,9 +444,50 @@ const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header
     if(current != nullptr){
         return current->trie->get_matching_rule(header);
     }
+    return nullptr;
 }
 
+TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table) {
+    RegularTrie* trie = new RegularTrie();
+    for(const Rule* rule : rule_table){
+        trie->add_rule(rule);
+    }
+    while(!trie->is_empty()){
+        std::list<const Rule*> rule_list = trie->remove_leaves();
+        TreeTrieEpsilonCluster* cluster = new TreeTrieEpsilonCluster();
+        for(const Rule* r : rule_list){
+            cluster->add_rule(r);
+        }
+        clusters.push_back(cluster);
+    }
+}
 
+TreeTrieEpsilon::~TreeTrieEpsilon() {
+    for(TreeTrieEpsilonCluster* cluster : clusters){
+        delete cluster;
+    }
+}
+
+const Rule* TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
+    const Rule* best_match = nullptr;
+    int best_match_priority = 0;
+    for(TreeTrieEpsilonCluster* cluster : clusters){
+        const Rule* match = cluster->get_matching_rule(header);
+        if(match != nullptr && match->priority >= best_match_priority){
+            best_match = match;
+            best_match_priority = match->priority;
+        }
+    }
+    return best_match;
+}
+
+void TreeTrieEpsilon::add_rule(const Rule &rule) {
+    //placeholder
+}
+
+void TreeTrieEpsilon::remove_rule(const Rule &rule) {
+    //placeholder
+}
 
 //
 //static int HiCuts::spmf(int n) {

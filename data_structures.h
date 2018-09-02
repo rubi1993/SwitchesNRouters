@@ -37,9 +37,11 @@ public:
     const Rule* get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
+    std::list<const Rule*> remove_leaves();
 private:
     Node* createPrefixNode(std::string prefix);
     void destroySubtree(RegularTrie::Node* subroot);
+    void removeSubtreeLeaves(RegularTrie::Node* subroot, std::list<const Rule*>& rule_list);
 
 };
 
@@ -126,8 +128,16 @@ private:
     void destroySubtree(TreeTrieEpsilonCluster::Node* subroot);
 };
 
-
-
+class TreeTrieEpsilon : PacketClassifier{
+    std::list<TreeTrieEpsilonCluster*> clusters;
+public:
+    TreeTrieEpsilon() : clusters() {}
+    TreeTrieEpsilon(std::list<const Rule*> rule_table);
+    ~TreeTrieEpsilon();
+    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    void add_rule(const Rule& rule) override;
+    void remove_rule(const Rule& rule) override;
+};
 
 
 class HiCuts : PacketClassifier{
