@@ -301,6 +301,11 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
             }
             is_root=false;
         }
+        else{
+            if(cur_node->zero!= nullptr){
+
+            }
+        }
     }
     visited[node->id]=true;
     if(node->mid!= nullptr and !visited.count(node->mid->id)){
