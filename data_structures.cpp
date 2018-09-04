@@ -256,9 +256,20 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
     std::string address = header.destination_address;
     int best_match_priority = 0;
     int nodes_seen = 0;
+    int bit_string_position = 0;
     for(char c : address){
         nodes_seen++;
         bool epsilon_nodes = false;
+        if(current->bs.length() == 0){
+            bit_string_position = 0;
+        }else{
+            if(current->bs[bit_string_position] == c){
+                bit_string_position++;
+                continue;
+            }else{
+                return std::make_pair(best_match, nodes_seen);
+            }
+        }
         while(current->mid!= nullptr)
         {
             epsilon_nodes = true;
