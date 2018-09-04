@@ -5,7 +5,7 @@
 int main() {
     Rule test_rule("00*", "010*", 22, 34, -1, -1, "TCP", 21, "Rule 1");
     Rule test_rule2("011*", "1111*", 22, 34, -1, -1, "TCP", 1, "Rule 2");
-    Rule test_rule3("00*", "01*", 22, 34, -1, -1, "TCP", 20, "Rule 3");
+    Rule test_rule3("11*", "01*", 22, 34, -1, -1, "TCP", 20, "Rule 3");
     std::list<const Rule*> rule_table;
     rule_table.push_back(&test_rule);
     rule_table.push_back(&test_rule2);
@@ -18,8 +18,8 @@ int main() {
     test.add_rule(test_rule3);
     //test.path_compress();
     PacketHeader test_header("00000", "01011", 30, 853, "TCP");
-    const Rule* returned_rule = test.get_matching_rule(test_header);
-    std::cout << returned_rule->rule_name << std::endl;
+    std::pair<const Rule*, int> returned_pair = test.get_matching_rule(test_header);
+    std::cout << returned_pair.first->rule_name << ", Nodes Seen - " << returned_pair.second << std::endl;
     std::cout << "Done." << std::endl;
     return 0;
 }

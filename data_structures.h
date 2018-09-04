@@ -9,12 +9,13 @@
 #include <string>
 #include <list>
 #include <map>
+#include <utility>
 
 #define SPFAC 4
 int int_counter(std::string str);
 
 class PacketClassifier{
-    virtual const Rule* get_matching_rule(const PacketHeader& header) const = 0;
+    virtual std::pair<const Rule*, int>  get_matching_rule(const PacketHeader& header) const = 0;
     virtual void add_rule(const Rule& rule) = 0;
     virtual void remove_rule(const Rule& rule) = 0;
 };
@@ -38,7 +39,7 @@ public:
     RegularTrie(bool flag) : root(nullptr), use_source_address(flag) {};
     ~RegularTrie();
     bool is_empty() {return root == nullptr;}
-    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
     std::list<const Rule*> remove_leaves();
@@ -67,7 +68,7 @@ public:
     TrieOfTries() : root(nullptr) {}
     TrieOfTries(std::list<const Rule*> rule_table);
     ~TrieOfTries();
-    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
 private:
@@ -102,7 +103,7 @@ public:
     ~EpsilonT();
     bool is_empty() {return root == nullptr;}
     void destroySubtree(Node* subroot);
-    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     Node* createPrefixNode(std::string prefix);
     void remove_rule(const Rule& rule) override;
@@ -131,7 +132,7 @@ class TreeTrieEpsilonCluster : PacketClassifier{
 public:
     TreeTrieEpsilonCluster() : root(nullptr) {}
     ~TreeTrieEpsilonCluster();
-    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
     void compress_all_paths();
@@ -146,7 +147,7 @@ public:
     TreeTrieEpsilon() : clusters() {}
     TreeTrieEpsilon(std::list<const Rule*> rule_table);
     ~TreeTrieEpsilon();
-    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
 };
@@ -164,7 +165,7 @@ class HiCuts : PacketClassifier{
     };
     Node* root;
     HiCuts() : root(nullptr) {}
-    const Rule* get_matching_rule(const PacketHeader& header) const override;
+    std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
 private:

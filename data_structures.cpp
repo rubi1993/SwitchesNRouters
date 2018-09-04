@@ -66,15 +66,17 @@ RegularTrie::~RegularTrie() {
     destroySubtree(root);
 }
 
-const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
+std::pair<const Rule*, int> RegularTrie::get_matching_rule(const PacketHeader& header) const {
     if(root == nullptr){
-        return nullptr;
+        return std::make_pair((const Rule*)nullptr, 0);
     }
     Node* current = root;
     const Rule* best_match = nullptr;
     int best_match_priority = 0;
+    int nodes_seen = 0;
     std::string address = use_source_address ? header.source_address : header.destination_address;
     for(char c : address){
+        nodes_seen++;
         for(const Rule* r : current->rules){
             if((r->source_port_start == -1 || \
                (r->source_port_start <= header.source_port && r->source_port_end >= header.source_port)) \
@@ -87,17 +89,17 @@ const Rule* RegularTrie::get_matching_rule(const PacketHeader& header) const {
         }
         if(c == '0'){
             if(current->zero == nullptr){
-                return best_match;
+                return std::make_pair(best_match, nodes_seen);
             }
             current = current->zero;
         }else if(c == '1'){
             if(current->one == nullptr){
-                return best_match;
+                return std::make_pair(best_match, nodes_seen);
             }
             current = current->one;
         }
     }
-    return best_match;
+    return std::make_pair(best_match, nodes_seen);
 }
 
 void RegularTrie::removeSubtreeLeaves(RegularTrie::Node *subroot, std::list<const Rule*>& rule_list) {
@@ -188,35 +190,38 @@ void TrieOfTries::remove_rule(const Rule &rule) {
     }
 }
 
-const Rule* TrieOfTries::get_matching_rule(const PacketHeader& header) const {
+std::pair<const Rule*, int> TrieOfTries::get_matching_rule(const PacketHeader& header) const {
     if(root == nullptr){
-        return nullptr;
+        return std::make_pair((const Rule*)nullptr, 0);
     }
     Node* current = root;
     const Rule* best_match = nullptr;
     int best_match_priority = 0;
+    int nodes_seen = 0;
     std::string address = header.source_address;
     for(char c : address){
         const Rule* match = nullptr;
         if(current->trie != nullptr){
-            match = current->trie->get_matching_rule(header);
+            std::pair<const Rule*, int> match_pair = current->trie->get_matching_rule(header);
+            match = match_pair.first;
+            nodes_seen += match_pair.second;
         }
         if(match != nullptr && best_match_priority <= match->priority){
             best_match = match;
         }
         if(c == '0'){
             if(current->zero == nullptr){
-                return best_match;
+                return std::make_pair(best_match, nodes_seen);
             }
             current = current->zero;
         }else if(c == '1'){
             if(current->one == nullptr){
-                return best_match;
+                return std::make_pair(best_match, nodes_seen);
             }
             current = current->one;
         }
     }
-    return best_match;
+    return std::make_pair(best_match, nodes_seen);
 }
 
 void TrieOfTries::destroySubtree(TrieOfTries::Node* subroot){
@@ -242,26 +247,34 @@ TrieOfTries::TrieOfTries(std::list<const Rule *> rule_table) {
     }
 }
 
-const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
+std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& header) const {
     if(root == nullptr){
-        return nullptr;
+        return std::make_pair((const Rule*)nullptr, 0);
     }
     Node* current = root;
     const Rule* best_match = nullptr;
     std::string address = header.destination_address;
     int best_match_priority = 0;
+    int nodes_seen = 0;
     for(char c : address){
+        nodes_seen++;
+        bool epsilon_nodes = false;
         while(current->mid!= nullptr)
         {
+            epsilon_nodes = true;
+            nodes_seen++;
             if((current->rule->source_port_start == -1 || \
                (current->rule->source_port_start <= header.source_port && current->rule->source_port_end >= header.source_port)) \
                && (current->rule->destination_port_start == -1 || \
                   (current->rule->destination_port_start <= header.destination_port && current->rule->destination_port_end >= header.destination_port)) \
-               && (current->rule->protocol == header.protocol || current->rule->protocol == "*") && current->rule->priority <= best_match_priority){
+               && (current->rule->protocol == header.protocol || current->rule->protocol == "*") && current->rule->priority >= best_match_priority){
                 best_match = current->rule;
                 best_match_priority = current->rule->priority;
             }
             current=current->mid;
+        }
+        if(epsilon_nodes){
+            nodes_seen--;
         }
         if(current->rule!= nullptr){
             if((current->rule->source_port_start == -1 || \
@@ -275,17 +288,17 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
         }
         if(c == '0'){
             if(current->zero == nullptr){
-                return best_match;
+                return std::make_pair(best_match, nodes_seen);
             }
             current = current->zero;
         }else if(c == '1'){
             if(current->one == nullptr){
-                return best_match;
+                return std::make_pair(best_match, nodes_seen);
             }
             current = current->one;
         }
     }
-    return best_match;
+    return std::make_pair(best_match, nodes_seen);
 }
 void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
     bool is_deleted= false;
@@ -428,7 +441,7 @@ void EpsilonT::add_rule(const Rule& rule) {
         node=node->mid;
     }
     if(node->rule != nullptr){
-        node->mid=new Node(&rule);
+        node->mid=new Node(node);
         node=node->mid;
     }
     node->rule = &rule;
@@ -577,13 +590,15 @@ void TreeTrieEpsilonCluster::remove_rule(const Rule& rule) {
     }
 }
 
-const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header) const {
+std::pair<const Rule*, int> TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header) const {
     if(root == nullptr){
-        return nullptr;
+        return std::make_pair((const Rule*)nullptr, 0);
     }
     std::string prefix = header.source_address;
     Node* current = root;
+    int nodes_seen = 0;
     while(current!= nullptr && current->prefix != prefix.substr(0, current->prefix.length())){
+        nodes_seen++;
         if(prefix < current->prefix){
             current = current->left;
         }else{
@@ -591,9 +606,11 @@ const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header
         }
     }
     if(current != nullptr){
-        return current->trie->get_matching_rule(header);
+        std::pair<const Rule*, int> match_pair = current->trie->get_matching_rule(header);
+        match_pair.second += nodes_seen;
+        return match_pair;
     }
-    return nullptr;
+    return std::make_pair((const Rule*)nullptr, nodes_seen);
 }
 
 void TreeTrieEpsilonCluster::compressSubtreePaths(TreeTrieEpsilonCluster::Node *subroot) {
@@ -634,17 +651,20 @@ TreeTrieEpsilon::~TreeTrieEpsilon() {
     }
 }
 
-const Rule* TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
+std::pair<const Rule*, int> TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
     const Rule* best_match = nullptr;
     int best_match_priority = 0;
+    int nodes_seen = 0;
     for(TreeTrieEpsilonCluster* cluster : clusters){
-        const Rule* match = cluster->get_matching_rule(header);
+        std::pair<const Rule*, int> match_pair = cluster->get_matching_rule(header);
+        const Rule* match = match_pair.first;
+        nodes_seen += match_pair.second;
         if(match != nullptr && match->priority >= best_match_priority){
             best_match = match;
             best_match_priority = match->priority;
         }
     }
-    return best_match;
+    return std::make_pair(best_match, nodes_seen);
 }
 
 void TreeTrieEpsilon::add_rule(const Rule &rule) {
