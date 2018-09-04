@@ -325,6 +325,7 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
                 root->bs+='1';
             }
             is_root=false;
+            delete (cur_node);
         }
         else{
             Node * prev_node=cur_node->prev;
@@ -363,6 +364,7 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
 
                 }
             }
+            delete (cur_node);
         }
     }
     visited[node->id]=true;
