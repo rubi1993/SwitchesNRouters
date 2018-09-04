@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <chrono>
 #include "rules.h"
 #include "data_structures.h"
 
@@ -23,11 +24,12 @@ int main() {
 //    std::cout << returned_pair.first->rule_name << ", Nodes Seen - " << returned_pair.second << std::endl;
 
     std::list<const Rule*> rule_table;
-    std::default_random_engine generator;
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
     std::uniform_int_distribution<int>binary_distribution(0,1);
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < 4000; i++){
         std::string source_address = "";
         for(int j=0; j < length_distribution(generator); j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
