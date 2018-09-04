@@ -288,6 +288,7 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
     return best_match;
 }
 void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
+    bool is_deleted= false;
     bool one_child=false;
     bool have_child=false;
     bool is_root=false;
@@ -325,7 +326,7 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
                 root->bs+='1';
             }
             is_root=false;
-            delete (cur_node);
+            is_deleted=true;
         }
         else{
             Node * prev_node=cur_node->prev;
@@ -364,7 +365,7 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
 
                 }
             }
-            delete (cur_node);
+            is_deleted=true;
         }
     }
     visited[node->id]=true;
@@ -376,6 +377,9 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
     }
     if(cur_node->zero!= nullptr and !visited.count(node->zero->id)){
         DFSUtil(cur_node->zero,visited);
+    }
+    if(is_deleted){
+        delete(cur_node);
     }
 }
 void EpsilonT::path_compress() {
