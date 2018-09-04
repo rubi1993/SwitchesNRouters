@@ -122,7 +122,6 @@ class TreeTrieEpsilonCluster : PacketClassifier{
         Node* prev;
         std::string prefix;
         EpsilonT* trie;
-
         Node() : left(nullptr), right(nullptr), prev(nullptr), trie(new EpsilonT) {}
         Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT) {}
         ~Node() {delete trie;}
