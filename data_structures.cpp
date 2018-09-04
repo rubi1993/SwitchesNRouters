@@ -5,7 +5,7 @@
 #include "data_structures.h"
 #include <iostream>
 #include <cmath>
-
+int EpsilonT::id_counter=0;
 RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
     if(root == nullptr){
         root = new Node();
@@ -273,15 +273,17 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
     bool one_child=false;
     bool have_child=false;
     bool is_root=false;
+    Node* cur_node= nullptr;
+
     if (root== nullptr){
         return;
     }
     if(root->id==node->id){
         is_root=true;
-    }
-    Node* cur_node=root;
-    if(cur_node->one!= nullptr or cur_node->zero!= nullptr){
-        have_child=true;
+        cur_node=root;
+
+    }else{
+        cur_node=node;
     }
     if(cur_node->one== nullptr and cur_node->zero!= nullptr or cur_node->one!= nullptr and cur_node->zero== nullptr){
         one_child=true;
@@ -289,70 +291,76 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
     if(cur_node->rule== nullptr and one_child){
         if(is_root){
             if(cur_node->zero!= nullptr){
+                cur_node->zero->bs=root->bs+cur_node->zero->bs;
+                cur_node->zero->sv+=root->sv;
                 root=cur_node->zero;
+                root->prev= nullptr;
                 root->sv+=1;
                 root->bs+='0';
-
             }
             else if(cur_node->one!= nullptr){
+                cur_node->one->bs=root->bs+cur_node->one->bs;
+                cur_node->one->sv+=root->sv;
                 root=cur_node->one;
+                root->prev= nullptr;
                 root->sv+=1;
                 root->bs+='1';
             }
             is_root=false;
         }
         else{
+            Node * prev_node=cur_node->prev;
             if(cur_node->zero!= nullptr){
+                if(prev_node->one!= nullptr and prev_node->one->id==cur_node->id){
 
+                    prev_node->one=cur_node->zero;
+                    cur_node->zero->sv=cur_node->zero->sv+cur_node->sv+1;
+                    cur_node->zero->bs=cur_node->bs+cur_node->zero->bs;
+                    cur_node->zero->bs+='0';
+                    cur_node->zero->prev=prev_node;
+                }
+                else if(prev_node->zero!= nullptr and prev_node->zero->id==cur_node->id){
+                    prev_node->zero=cur_node->zero;
+                    cur_node->zero->sv=cur_node->zero->sv+cur_node->sv+1;
+                    cur_node->zero->bs=cur_node->bs+cur_node->zero->bs;
+                    cur_node->zero->bs+='0';
+                    cur_node->zero->prev=prev_node;
+
+                }
+            }
+            else if(cur_node->one!= nullptr){
+                if(prev_node->one!= nullptr and prev_node->one->id==cur_node->id){
+                    prev_node->one=cur_node->one;
+                    cur_node->one->sv=cur_node->one->sv+cur_node->sv+1;
+                    cur_node->one->bs=cur_node->bs+cur_node->one->bs;
+                    cur_node->one->bs+='1';
+                    cur_node->one->prev=prev_node;
+
+                }else if(prev_node->zero!= nullptr and prev_node->zero->id==cur_node->id){
+                    prev_node->zero=cur_node->one;
+                    cur_node->one->sv=cur_node->one->sv+cur_node->sv+1;
+                    cur_node->one->bs=cur_node->bs+cur_node->one->bs;
+                    cur_node->one->bs+='1';
+                    cur_node->one->prev=prev_node;
+
+                }
             }
         }
     }
     visited[node->id]=true;
-    if(node->mid!= nullptr and !visited.count(node->mid->id)){
-        DFSUtil(node->mid,visited);
+    if(cur_node->mid!= nullptr and !visited.count(node->mid->id)){
+        DFSUtil(cur_node->mid,visited);
     }
-    if(node->one!= nullptr and !visited.count(node->one->id)){
-        DFSUtil(node->one,visited);
+    if(cur_node->one!= nullptr and !visited.count(node->one->id)){
+        DFSUtil(cur_node->one,visited);
     }
-    if(node->zero!= nullptr and !visited.count(node->zero->id)){
-        DFSUtil(node->zero,visited);
+    if(cur_node->zero!= nullptr and !visited.count(node->zero->id)){
+        DFSUtil(cur_node->zero,visited);
     }
 }
 void EpsilonT::path_compress() {
-//    bool one_child=false;
-//    bool have_child=false;
-//    bool is_root=false;
-//    if (root== nullptr){
-//        return;
-//    }
-//    else{
-//        is_root=true;
-//    }
-//    Node* cur_node=root;
-//    if(cur_node->one!= nullptr or cur_node->zero!= nullptr){
-//        have_child=true;
-//    }
-//    if(cur_node->one== nullptr and cur_node->zero!= nullptr or cur_node->one!= nullptr and cur_node->zero== nullptr){
-//        one_child=true;
-//    }
-//    if(cur_node->rule== nullptr and one_child){
-//        if(is_root){
-//            if(cur_node->zero!= nullptr){
-//                root=cur_node->zero;
-//                root->sv+=1;
-//                root->bs+='0';
-//
-//            }
-//            else if(cur_node->one!= nullptr){
-//                root=cur_node->one;
-//                root->sv+=1;
-//                root->bs+='1';
-//            }
-//            is_root=false;
-//        }
-//    }
-
-
+    std::map<int,bool> visited;
+    DFSUtil(root,visited);
 }
 
 EpsilonT::Node * EpsilonT::createPrefixNode(std::string prefix){

@@ -97,7 +97,7 @@ public:
     Node* root;
     static int id_counter;
 public:
-    EpsilonT() : root(nullptr),id_counter(0) {}
+    EpsilonT() : root(nullptr) {}
     ~EpsilonT();
     bool is_empty() {return root == nullptr;}
     void destroySubtree(Node* subroot);
@@ -105,13 +105,12 @@ public:
     void add_rule(const Rule& rule) override;
     Node* createPrefixNode(std::string prefix);
     void remove_rule(const Rule& rule) override;
-    void DFSUtil(Node * node,std::map<int,bool>);
     void path_compress();
 
 private:
+    void DFSUtil(Node * node,std::map<int,bool>);
     Node* getPrefixNode(std::string prefix) const;
 };
-
 
 class TreeTrieEpsilonCluster : PacketClassifier{
     class Node {

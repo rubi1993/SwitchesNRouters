@@ -10,7 +10,13 @@ int main() {
     rule_table.push_back(&test_rule);
     rule_table.push_back(&test_rule2);
     rule_table.push_back(&test_rule3);
-    TreeTrieEpsilon test(rule_table);
+//    TreeTrieEpsilon test(rule_table);
+    EpsilonT test;
+
+    test.add_rule(test_rule);
+    test.add_rule(test_rule2);
+    test.add_rule(test_rule3);
+    test.path_compress();
     PacketHeader test_header("00000", "01011", 30, 853, "TCP");
     const Rule* returned_rule = test.get_matching_rule(test_header);
     std::cout << returned_rule->rule_name << std::endl;
