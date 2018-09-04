@@ -134,8 +134,10 @@ public:
     const Rule* get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
     void remove_rule(const Rule& rule) override;
+    void compress_all_paths();
 private:
     void destroySubtree(TreeTrieEpsilonCluster::Node* subroot);
+    void compressSubtreePaths(TreeTrieEpsilonCluster::Node* subroot);
 };
 
 class TreeTrieEpsilon : PacketClassifier{

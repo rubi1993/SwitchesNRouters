@@ -592,6 +592,21 @@ const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header
     return nullptr;
 }
 
+void TreeTrieEpsilonCluster::compressSubtreePaths(TreeTrieEpsilonCluster::Node *subroot) {
+    if(subroot == nullptr){
+        return;
+    }
+    if(subroot->trie != nullptr){
+        subroot->trie->path_compress();
+    }
+    compressSubtreePaths(subroot->left);
+    compressSubtreePaths(subroot->right);
+}
+
+void TreeTrieEpsilonCluster::compress_all_paths() {
+    compressSubtreePaths(root);
+}
+
 TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table) {
     RegularTrie* trie = new RegularTrie(true);
     for(const Rule* rule : rule_table){
@@ -603,6 +618,7 @@ TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table) {
         for(const Rule* r : rule_list){
             cluster->add_rule(*r);
         }
+        cluster->compress_all_paths();
         clusters.push_back(cluster);
     }
 }
