@@ -158,12 +158,18 @@ TrieOfTries::Node * TrieOfTries::createPrefixNode(std::string prefix){
 void TrieOfTries::add_rule(const Rule& rule) {
     std::string prefix = rule.source_address;
     Node* node = createPrefixNode(prefix);
+    if(node->trie == nullptr){
+        node->trie = new RegularTrie();
+    }
     node->trie->add_rule(rule);
 }
 
 void TrieOfTries::remove_rule(const Rule &rule) {
     std::string prefix = rule.source_address;
     Node* node = createPrefixNode(prefix);
+    if(node->trie == nullptr){
+        node->trie = new RegularTrie();
+    }
     node->trie->remove_rule(rule);
     while(node != nullptr && node->trie->is_empty() && node->zero == nullptr && node->one == nullptr){
         Node* temp = node;
@@ -191,7 +197,10 @@ const Rule* TrieOfTries::get_matching_rule(const PacketHeader& header) const {
     int best_match_priority = 0;
     std::string address = header.source_address;
     for(char c : address){
-        const Rule* match = current->trie->get_matching_rule(header);
+        const Rule* match = nullptr;
+        if(current->trie != nullptr){
+            match = current->trie->get_matching_rule(header);
+        }
         if(match != nullptr && best_match_priority <= match->priority){
             best_match = match;
         }
@@ -214,7 +223,6 @@ void TrieOfTries::destroySubtree(TrieOfTries::Node* subroot){
     if(subroot != nullptr){
         destroySubtree(subroot->zero);
         destroySubtree(subroot->one);
-        delete subroot->trie;
         delete subroot;
     }
 }
@@ -222,7 +230,17 @@ TrieOfTries::~TrieOfTries() {
     destroySubtree(root);
 }
 
-
+TrieOfTries::TrieOfTries(std::list<const Rule *> rule_table) {
+    root = nullptr;
+    for(const Rule* rule : rule_table){
+        std::string prefix = rule->source_address;
+        Node* node = createPrefixNode(prefix);
+        if(node->trie == nullptr){
+            node->trie = new RegularTrie();
+        }
+        node->trie->add_rule(*rule);
+    }
+}
 
 const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
     if(root == nullptr){
@@ -231,8 +249,8 @@ const Rule* EpsilonT::get_matching_rule(const PacketHeader& header) const {
     Node* current = root;
     const Rule* best_match = nullptr;
     std::string address = header.destination_address;
+    int best_match_priority = 0;
     for(char c : address){
-        int best_match_priority = 0;
         while(current->mid!= nullptr)
         {
             if((current->rule->source_port_start == -1 || \
@@ -495,10 +513,11 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
         prefix += "0";
     }
     Node* current = root;
-    while(current != nullptr){
+    while(current->prefix != prefix){
         if(prefix < current->prefix){
             if(current->left == nullptr){
                 current->left = new Node(current);
+                current->left->trie = new EpsilonT();
                 current->left->trie->add_rule(rule);
                 current->left->prefix = prefix;
                 return;
@@ -507,6 +526,7 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
         }else{
             if(current->right == nullptr){
                 current->right = new Node(current);
+                current->right->trie = new EpsilonT();
                 current->right->trie->add_rule(rule);
                 current->right->prefix = prefix;
                 return;
@@ -514,6 +534,7 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
             current = current->right;
         }
     }
+    current->trie->add_rule(rule);
 }
 
 void TreeTrieEpsilonCluster::remove_rule(const Rule& rule) {
@@ -574,13 +595,13 @@ const Rule* TreeTrieEpsilonCluster::get_matching_rule(const PacketHeader &header
 TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table) {
     RegularTrie* trie = new RegularTrie(true);
     for(const Rule* rule : rule_table){
-        trie->add_rule(rule);
+        trie->add_rule(*rule);
     }
     while(!trie->is_empty()){
         std::list<const Rule*> rule_list = trie->remove_leaves();
         TreeTrieEpsilonCluster* cluster = new TreeTrieEpsilonCluster();
         for(const Rule* r : rule_list){
-            cluster->add_rule(r);
+            cluster->add_rule(*r);
         }
         clusters.push_back(cluster);
     }

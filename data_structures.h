@@ -57,14 +57,15 @@ class TrieOfTries : PacketClassifier{
         Node* prev;
         RegularTrie* trie;
 
-        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(new RegularTrie) {}
-        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(new RegularTrie) {}
-        ~Node() {delete trie;}
+        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(nullptr) {}
+        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(nullptr) {}
+        ~Node() {if(trie!= nullptr) {delete trie;}}
     };
     Node* root;
 
 public:
     TrieOfTries() : root(nullptr) {}
+    TrieOfTries(std::list<const Rule*> rule_table);
     ~TrieOfTries();
     const Rule* get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
