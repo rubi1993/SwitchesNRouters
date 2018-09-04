@@ -523,7 +523,6 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
         if(prefix < current->prefix){
             if(current->left == nullptr){
                 current->left = new Node(current);
-                current->left->trie = new EpsilonT();
                 current->left->trie->add_rule(rule);
                 current->left->prefix = prefix;
                 return;
@@ -532,7 +531,6 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
         }else{
             if(current->right == nullptr){
                 current->right = new Node(current);
-                current->right->trie = new EpsilonT();
                 current->right->trie->add_rule(rule);
                 current->right->prefix = prefix;
                 return;
@@ -627,6 +625,7 @@ TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table) {
         cluster->compress_all_paths();
         clusters.push_back(cluster);
     }
+    delete trie;
 }
 
 TreeTrieEpsilon::~TreeTrieEpsilon() {
