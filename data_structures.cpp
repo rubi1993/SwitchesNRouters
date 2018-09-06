@@ -284,28 +284,38 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
         {
             epsilon_nodes = true;
             nodes_seen++;
-            if((current->rule->source_port_start == -1 || \
-               (current->rule->source_port_start <= header.source_port && current->rule->source_port_end >= header.source_port)) \
-               && (current->rule->destination_port_start == -1 || \
-                  (current->rule->destination_port_start <= header.destination_port && current->rule->destination_port_end >= header.destination_port)) \
-               && (current->rule->protocol == header.protocol || current->rule->protocol == "*") && current->rule->priority >= best_match_priority){
-                best_match = current->rule;
-                best_match_priority = current->rule->priority;
+            for (const Rule* rule : current->rule_list){
+                nodes_seen++;
+                if((rule->source_port_start == -1 || \
+                   (rule->source_port_start <= header.source_port && rule->source_port_end >= header.source_port)) \
+                   && (rule->destination_port_start == -1 || \
+                      (rule->destination_port_start <= header.destination_port && rule->destination_port_end >= header.destination_port)) \
+                   && (rule->protocol == header.protocol || rule->protocol == "*") && rule->priority >= best_match_priority){
+                    best_match = rule;
+                    best_match_priority = rule->priority;
+                }
+            }
+            if(current->rule_list.size() > 0){
+                nodes_seen--;
             }
             current=current->mid;
         }
         if(epsilon_nodes){
             nodes_seen--;
         }
-        if(current->rule!= nullptr){
-            if((current->rule->source_port_start == -1 || \
-               (current->rule->source_port_start <= header.source_port && current->rule->source_port_end >= header.source_port)) \
-               && (current->rule->destination_port_start == -1 || \
-                  (current->rule->destination_port_start <= header.destination_port && current->rule->destination_port_end >= header.destination_port)) \
-               && (current->rule->protocol == header.protocol || current->rule->protocol == "*") && current->rule->priority >= best_match_priority){
-                best_match = current->rule;
-                best_match_priority = current->rule->priority;
+        for (const Rule* rule : current->rule_list){
+            nodes_seen++;
+            if((rule->source_port_start == -1 || \
+                   (rule->source_port_start <= header.source_port && rule->source_port_end >= header.source_port)) \
+                   && (rule->destination_port_start == -1 || \
+                      (rule->destination_port_start <= header.destination_port && rule->destination_port_end >= header.destination_port)) \
+                   && (rule->protocol == header.protocol || rule->protocol == "*") && rule->priority >= best_match_priority){
+                best_match = rule;
+                best_match_priority = rule->priority;
             }
+        }
+        if(current->rule_list.size() > 0){
+            nodes_seen--;
         }
         if(c == '0'){
             if(current->zero == nullptr){
@@ -341,7 +351,7 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
     if(cur_node->one== nullptr and cur_node->zero!= nullptr or cur_node->one!= nullptr and cur_node->zero== nullptr){
         one_child=true;
     }
-    if(cur_node->rule== nullptr and one_child){
+    if(cur_node->rule_list.size() < p_trie  and one_child){
         if(is_root){
             if(cur_node->zero!= nullptr){
                 cur_node->zero->bs=root->bs+cur_node->zero->bs;
@@ -461,10 +471,10 @@ EpsilonT::~EpsilonT() {
 void EpsilonT::add_rule(const Rule& rule) {
     std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
-    if(node->rule != nullptr){
+    if(node->rule_list.size() == p_trie){
         Node* prev = node->prev;
         Node* created = new Node(prev);
-        created->rule = &rule;
+        created->rule_list.push_back(&rule);
         created->mid = node;
         node->prev = created;
         if(prev != nullptr){
@@ -479,33 +489,37 @@ void EpsilonT::add_rule(const Rule& rule) {
             root = created;
         }
     }else{
-        node->rule = &rule;
+        node->rule_list.push_back(&rule);
     }
 }
 
 
 void EpsilonT::remove_rule(const Rule &rule) {
-    std::string prefix = rule.destination_address;
-    Node* node = createPrefixNode(prefix);
-    while  (node->rule!=&rule)
-    {
-        node=node->mid;
-    }
-    Node *temp= nullptr;
-    if(node->mid!= nullptr)
-    {
-        temp = node->mid;
-        node->prev->mid=temp;
-    }
-    else if(node->one!= nullptr){
-        temp = node->one;
-        node->prev->one=temp;
-
-    }
-    else if(node->zero!= nullptr){
-        temp = node->zero;
-        node->prev->zero=temp;
-    }
+//    std::string prefix = rule.destination_address;
+//    Node* node = createPrefixNode(prefix);
+//    bool fount = false;
+//    while(!found)
+//    {
+//        for(const Rule* rule : node->rule_list){
+//            if(&rule != )
+//        }
+//        node=node->mid;
+//    }
+//    Node *temp= nullptr;
+//    if(node->mid!= nullptr)
+//    {
+//        temp = node->mid;
+//        node->prev->mid=temp;
+//    }
+//    else if(node->one!= nullptr){
+//        temp = node->one;
+//        node->prev->one=temp;
+//
+//    }
+//    else if(node->zero!= nullptr){
+//        temp = node->zero;
+//        node->prev->zero=temp;
+//    }
 }
 
 
@@ -555,7 +569,7 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
         if(prefix[prefix.length() - 1] == '*'){
             prefix.erase(prefix.length() - 1);
         }
-        root = new Node();
+        root = new Node(p_trie);
         root->trie->add_rule(rule);
         root->prefix = prefix;
         return;
@@ -664,14 +678,14 @@ void TreeTrieEpsilonCluster::compress_all_paths() {
 }
 
 
-TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table) {
+TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table, int p_t) {
     RegularTrie* trie = new RegularTrie(true);
     for(const Rule* rule : rule_table){
         trie->add_rule(*rule);
     }
     while(!trie->is_empty()){
         std::list<const Rule*> rule_list = trie->remove_leaves();
-        TreeTrieEpsilonCluster* cluster = new TreeTrieEpsilonCluster();
+        TreeTrieEpsilonCluster* cluster = new TreeTrieEpsilonCluster(p_t);
         for(const Rule* r : rule_list){
             cluster->add_rule(*r);
         }
@@ -687,66 +701,78 @@ TreeTrieEpsilon::~TreeTrieEpsilon() {
     }
 }
 
-//struct arg_struct {
-//    int*  priority;
-//    TreeTrieEpsilonCluster* tree;
-//    const PacketHeader* packetHeader;
-//    const Rule** bestMatch;
-//};
-//
-//void* get_matching_by_thread(void *arguments){
-//    std::cout << pthread_self() << std::endl;
-//    struct arg_struct *args=(struct arg_struct *)arguments;
-//    std::pair<const Rule*, int> pair=args->tree->get_matching_rule(*args->packetHeader);
-//    int best_match_priority=*(args->priority);
-//    const Rule* cur_rule=pair.first;
-//    if(cur_rule!= nullptr and cur_rule->priority>=best_match_priority){
-//        mutex.lock();
-//        *(args->bestMatch)=cur_rule;
-//        *(args->priority)=cur_rule->priority;
-//        mutex.unlock();
-//    }
-//    pthread_exit(NULL);
-//}
-//
-//
-//std::pair<const Rule*, int>  TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
-//    pthread_t threads[clusters.size()];
-//    int priority=0;
-//    int index=0;
-//    const Rule* best_match= nullptr;
-//    for(TreeTrieEpsilonCluster* cluster : clusters){ //todo: to add multithreading.
-////        //create thread, send mission
-////        const Rule* match = cluster->get_matching_rule(header);
-////        if(match != nullptr && match->priority >= best_match_priority){
-////            best_match = match;
-////            best_match_priority = match->priority;
-////        }
-//        struct arg_struct my_args;
-//        my_args.priority=&priority;
-//        my_args.bestMatch= &best_match;
-//        my_args.packetHeader=&header;
-//        my_args.tree=cluster;
-//        pthread_create(&threads[index],NULL,get_matching_by_thread,(void *)&my_args);
-//        index+=1;
-//    }
-//}
+struct arg_struct {
+    int*  priority;
+    TreeTrieEpsilonCluster* tree;
+    const PacketHeader* packetHeader;
+    const Rule** bestMatch;
+    int* nodes_seen;
+};
 
-std::pair<const Rule*, int> TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
-    int best_match_priority = 0;
-    const Rule* best_match= nullptr;
-    int nodes_seen = 0;
-    for(TreeTrieEpsilonCluster* cluster : clusters) {
-        std::pair<const Rule *, int> match_pair = cluster->get_matching_rule(header);
-        const Rule *match = match_pair.first;
-        nodes_seen += match_pair.second;
-        if (match != nullptr && match->priority >= best_match_priority) {
-            best_match = match;
-            best_match_priority = match->priority;
+void* get_matching_by_thread(void *arguments){
+    struct arg_struct *args=(struct arg_struct *)arguments;
+    std::pair<const Rule*, int> pair=args->tree->get_matching_rule(*args->packetHeader);
+    int nodes_seen = pair.second;
+    const Rule* cur_rule=pair.first;
+    mutex.lock();
+    int best_match_priority=*(args->priority);
+    if(cur_rule!= nullptr and cur_rule->priority>=best_match_priority){
+        *(args->bestMatch)=cur_rule;
+        *(args->priority)=cur_rule->priority;
+        if(*(args->nodes_seen) < nodes_seen) {
+            *(args->nodes_seen)=nodes_seen;
         }
+    }
+    mutex.unlock();
+    pthread_exit(NULL);
+}
+
+
+std::pair<const Rule*, int>  TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
+    pthread_t threads[clusters.size()];
+    int priority=0;
+    int index=0;
+    int nodes_seen = 0;
+    const Rule* best_match= nullptr;
+    struct arg_struct my_args[clusters.size()];
+    for(TreeTrieEpsilonCluster* cluster : clusters){ //todo: to add multithreading.
+//        //create thread, send mission
+//        const Rule* match = cluster->get_matching_rule(header);
+//        if(match != nullptr && match->priority >= best_match_priority){
+//            best_match = match;
+//            best_match_priority = match->priority;
+//        }
+        my_args[index].priority=&priority;
+        my_args[index].bestMatch= &best_match;
+        my_args[index].packetHeader=&header;
+        my_args[index].tree=cluster;
+        my_args[index].nodes_seen = &nodes_seen;
+        pthread_create(&threads[index],NULL,get_matching_by_thread,(void *)(my_args + index));
+        index+=1;
+    }
+    for(pthread_t& thread : threads){
+        pthread_join(thread, NULL);
     }
     return std::make_pair(best_match, nodes_seen);
 }
+
+//std::pair<const Rule*, int> TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
+//    int best_match_priority = 0;
+//    const Rule* best_match= nullptr;
+//    int nodes_seen = 0;
+//    for(TreeTrieEpsilonCluster* cluster : clusters) {
+//        std::pair<const Rule *, int> match_pair = cluster->get_matching_rule(header);
+//        const Rule *match = match_pair.first;
+//        if(nodes_seen < match_pair.second){
+//            nodes_seen = match_pair.second;
+//        }
+//        if (match != nullptr && match->priority >= best_match_priority) {
+//            best_match = match;
+//            best_match_priority = match->priority;
+//        }
+//    }
+//    return std::make_pair(best_match, nodes_seen);
+//}
 
 void TreeTrieEpsilon::add_rule(const Rule &rule) {
     //placeholder

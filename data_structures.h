@@ -88,18 +88,19 @@ public:
         int size;
         int sv;
         std::string bs;
-        const Rule* rule;
-        Node(const Rule* rule) : rule(rule) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr),
-                                 size(0),sv(0),bs(0) {id=id_counter;id_counter+=1;}
-        Node():rule(nullptr), size(0),sv(0),bs() ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr) {id=id_counter;id_counter+=1;}
-        Node(Node* pre) : zero(nullptr),mid(nullptr), one(nullptr), prev(pre), rule(), size(0),sv
+        std::list<const Rule*> rule_list;
+//        Node(const Rule* rule) : rule(rule) ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr),
+//                                 size(0),sv(0),bs(0) {id=id_counter;id_counter+=1;}
+        Node(): rule_list(), size(0),sv(0),bs() ,mid(nullptr),zero(nullptr), one(nullptr), prev(nullptr) {id=id_counter;id_counter+=1;}
+        Node(Node* pre) : zero(nullptr),mid(nullptr), one(nullptr), prev(pre), rule_list(), size(0),sv
                 (0),bs(){id=id_counter;id_counter+=1;}
     };
 
     Node* root;
     static int id_counter;
+    int p_trie;
 public:
-    EpsilonT() : root(nullptr) {}
+    EpsilonT(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~EpsilonT();
     bool is_empty() {return root == nullptr;}
     void destroySubtree(Node* subroot);
@@ -121,15 +122,17 @@ class TreeTrieEpsilonCluster : PacketClassifier{
         Node* right;
         Node* prev;
         std::string prefix;
+        int p_trie;
         EpsilonT* trie;
-        Node() : left(nullptr), right(nullptr), prev(nullptr), trie(new EpsilonT) {}
-        Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT) {}
+        Node(int p_t = 1) : left(nullptr), right(nullptr), prev(nullptr), p_trie(p_t), trie(new EpsilonT(p_t)) {}
+        Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT(prev->p_trie)) {}
         ~Node() {delete trie;}
     };
     Node* root;
+    int p_trie;
 
 public:
-    TreeTrieEpsilonCluster() : root(nullptr) {}
+    TreeTrieEpsilonCluster(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~TreeTrieEpsilonCluster();
     std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
@@ -145,7 +148,7 @@ class TreeTrieEpsilon : PacketClassifier{
 
 public:
     TreeTrieEpsilon() : clusters() {}
-    TreeTrieEpsilon(std::list<const Rule*> rule_table);
+    TreeTrieEpsilon(std::list<const Rule*> rule_table, int p_t = 1);
     ~TreeTrieEpsilon();
     std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;

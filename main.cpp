@@ -29,6 +29,7 @@ int main() {
     std::uniform_int_distribution<int>binary_distribution(0,1);
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
+    int p_trie = 1;
     for(int i = 0; i < 20000; i++){
         std::string source_address = "";
         for(int j=0; j < length_distribution(generator); j++){
@@ -63,7 +64,7 @@ int main() {
                              destination_port_start, destination_port_end, protocol, i, "Rule " + std::to_string(i)));
     }
     TrieOfTries test(rule_table);
-    TreeTrieEpsilon test2(rule_table);
+    TreeTrieEpsilon test2(rule_table, p_trie);
     std::cout << "------------------------------------------------------------------" << std::endl;
     for(int i = 0; i < 20; i++){
         std::string source_address = "";
