@@ -92,6 +92,7 @@ std::pair<const Rule*, int> RegularTrie::get_matching_rule(const PacketHeader& h
                 best_match = r;
                 best_match_priority = r->priority;
             }
+            nodes_seen++;
         }
         if(c == '0'){
             if(current->zero == nullptr){
@@ -460,15 +461,26 @@ EpsilonT::~EpsilonT() {
 void EpsilonT::add_rule(const Rule& rule) {
     std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
-    while(node->mid!= nullptr){
-        node=node->mid;
-    }
     if(node->rule != nullptr){
-        node->mid=new Node(node);
-        node=node->mid;
+        Node* prev = node->prev;
+        Node* created = new Node(prev);
+        created->rule = &rule;
+        created->mid = node;
+        node->prev = created;
+        if(prev != nullptr){
+            if(prev->zero == node){
+                prev->zero = created;
+            }else if(prev->one == node){
+                prev->one = created;
+            }else if(prev->mid == node){
+                prev->mid = created;
+            }
+        }else{
+            root = created;
+        }
+    }else{
+        node->rule = &rule;
     }
-    node->rule = &rule;
-
 }
 
 
@@ -553,9 +565,6 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
     }
     while(prefix.length() < root->prefix.length()){
         prefix += "0";
-    }
-    if(rule.rule_name == "Rule 3632"){
-        std::cout << "Test" << std::endl;
     }
     Node* current = root;
     while(current->prefix != prefix){

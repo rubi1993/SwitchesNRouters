@@ -24,8 +24,8 @@ int main() {
 //    std::cout << returned_pair.first->rule_name << ", Nodes Seen - " << returned_pair.second << std::endl;
 
     std::list<const Rule*> rule_table;
-    //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator;
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
     std::uniform_int_distribution<int>binary_distribution(0,1);
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
