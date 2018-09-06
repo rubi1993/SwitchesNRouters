@@ -30,7 +30,7 @@ int main() {
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
     int p_trie = 1;
-    for(int i = 0; i < 200000; i++){
+    for(int i = 0; i < 20000; i++){
         std::string source_address = "";
         for(int j=0; j < length_distribution(generator); j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
@@ -66,7 +66,7 @@ int main() {
     TrieOfTries test(rule_table);
     TreeTrieEpsilon test2(rule_table, p_trie);
     std::cout << "------------------------------------------------------------------" << std::endl;
-    for(int i = 0; i < 20; i++){
+    for(int i = 0; i < 200; i++){
         std::string source_address = "";
         for(int j=0; j < 8; j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
@@ -92,6 +92,9 @@ int main() {
                   << ", Nodes Seen: " << returned_pair.second << " ?=? [TreeTrieEpsilon]" << \
                   (returned_pair2.first == nullptr ? "None" : returned_pair2.first->rule_name) << ", Nodes Seen:" <<\
                   returned_pair2.second << std::endl;
+        if(returned_pair.first != returned_pair2.first){
+            std::cout << "DISCREPANCY" << std::endl;
+        }
 
     }
     std::cout << "Done." << std::endl;
