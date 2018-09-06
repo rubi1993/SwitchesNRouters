@@ -66,7 +66,7 @@ int main() {
     TrieOfTries test(rule_table);
     TreeTrieEpsilon test2(rule_table, p_trie);
     std::cout << "------------------------------------------------------------------" << std::endl;
-    for(int i = 0; i < 200; i++){
+    for(int i = 0; i < 2000; i++){
         std::string source_address = "";
         for(int j=0; j < 8; j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
