@@ -201,6 +201,7 @@ std::pair<const Rule*, int> TrieOfTries::get_matching_rule(const PacketHeader& h
     std::string address = header.source_address;
     for(char c : address){
         const Rule* match = nullptr;
+        nodes_seen++;
         if(current->trie != nullptr){
             std::pair<const Rule*, int> match_pair = current->trie->get_matching_rule(header);
             match = match_pair.first;
@@ -208,6 +209,7 @@ std::pair<const Rule*, int> TrieOfTries::get_matching_rule(const PacketHeader& h
         }
         if(match != nullptr && best_match_priority <= match->priority){
             best_match = match;
+            best_match_priority = match->priority;
         }
         if(c == '0'){
             if(current->zero == nullptr){
@@ -262,9 +264,10 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
         bool epsilon_nodes = false;
         if(current->bs.length() == 0){
             bit_string_position = 0;
-        }else{
+        }else if(bit_string_position < current->bs.length()){
             if(current->bs[bit_string_position] == c){
                 bit_string_position++;
+                nodes_seen--;
                 continue;
             }else{
                 return std::make_pair(best_match, nodes_seen);
@@ -417,6 +420,9 @@ EpsilonT::Node * EpsilonT::createPrefixNode(std::string prefix){
     }
     Node* current = root;
     for(char c : prefix){
+        while(current->mid != nullptr){
+            current = current->mid;
+        }
         if(c == '0'){
             if(current->zero == nullptr){
                 current->zero = new Node(current);
@@ -542,6 +548,9 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
     while(prefix.length() < root->prefix.length()){
         prefix += "0";
     }
+    if(rule.rule_name == "Rule 3632"){
+        std::cout << "Test" << std::endl;
+    }
     Node* current = root;
     while(current->prefix != prefix){
         if(prefix < current->prefix){
@@ -610,7 +619,7 @@ std::pair<const Rule*, int> TreeTrieEpsilonCluster::get_matching_rule(const Pack
     int nodes_seen = 0;
     while(current!= nullptr && current->prefix != prefix.substr(0, current->prefix.length())){
         nodes_seen++;
-        if(prefix < current->prefix){
+        if(prefix.substr(0, current->prefix.length()) < current->prefix){
             current = current->left;
         }else{
             current = current->right;

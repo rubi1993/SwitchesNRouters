@@ -24,8 +24,8 @@ int main() {
 //    std::cout << returned_pair.first->rule_name << ", Nodes Seen - " << returned_pair.second << std::endl;
 
     std::list<const Rule*> rule_table;
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator(seed);
+    //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator;
     std::uniform_int_distribution<int>binary_distribution(0,1);
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
@@ -62,7 +62,8 @@ int main() {
         rule_table.push_back(new Rule(source_address, destination_address, source_port_start, source_port_end,\
                              destination_port_start, destination_port_end, protocol, i, "Rule " + std::to_string(i)));
     }
-    TreeTrieEpsilon test(rule_table);
+    TrieOfTries test(rule_table);
+    TreeTrieEpsilon test2(rule_table);
     std::cout << "------------------------------------------------------------------" << std::endl;
     for(int i = 0; i < 20; i++){
         std::string source_address = "";
@@ -83,10 +84,13 @@ int main() {
         }
         PacketHeader header(source_address, destination_address, source_port, destination_port, protocol);
         std::pair<const Rule*, int> returned_pair = test.get_matching_rule(header);
+        std::pair<const Rule*, int> returned_pair2 = test2.get_matching_rule(header);
         std::cout << "Header " << i << ": " << source_address << " " << destination_address << " " << source_port \
-                  <<  " " << destination_port << " " << protocol << " -> Matching Rule: " << \
+                  <<  " " << destination_port << " " << protocol << " -> [TrieOfTries] Matching Rule: " << \
                   (returned_pair.first == nullptr ? "None" : returned_pair.first->rule_name) \
-                  << ", Nodes Seen: " << returned_pair.second <<std::endl;
+                  << ", Nodes Seen: " << returned_pair.second << " ?=? [TreeTrieEpsilon]" << \
+                  (returned_pair2.first == nullptr ? "None" : returned_pair2.first->rule_name) << ", Nodes Seen:" <<\
+                  returned_pair2.second << std::endl;
 
     }
     std::cout << "Done." << std::endl;
