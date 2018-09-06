@@ -142,6 +142,7 @@ private:
 
 class TreeTrieEpsilon : PacketClassifier{
     std::list<TreeTrieEpsilonCluster*> clusters;
+
 public:
     TreeTrieEpsilon() : clusters() {}
     TreeTrieEpsilon(std::list<const Rule*> rule_table);

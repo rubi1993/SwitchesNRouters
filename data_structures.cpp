@@ -677,48 +677,66 @@ TreeTrieEpsilon::~TreeTrieEpsilon() {
         delete cluster;
     }
 }
-struct arg_struct {
-    int*  priority;
-    TreeTrieEpsilonCluster* tree;
-    const PacketHeader* packetHeader;
-    const Rule** bestMatch;
-};
-void* get_matching_by_thread(void *arguments){
-    std::cout << pthread_self() << std::endl;
-    struct arg_struct *args=(struct arg_struct *)arguments;
-    std::pair<const Rule*, int> pair=args->tree->get_matching_rule(*args->packetHeader);
-    int best_match_priority=*(args->priority);
-    const Rule* cur_rule=pair.first;
-    if(cur_rule!= nullptr and cur_rule->priority>=best_match_priority){
-        mutex.lock();
-        *(args->bestMatch)=cur_rule;
-        *(args->priority)=cur_rule->priority;
-        mutex.unlock();
-    }
-    pthread_exit(NULL);
-}
 
+//struct arg_struct {
+//    int*  priority;
+//    TreeTrieEpsilonCluster* tree;
+//    const PacketHeader* packetHeader;
+//    const Rule** bestMatch;
+//};
+//
+//void* get_matching_by_thread(void *arguments){
+//    std::cout << pthread_self() << std::endl;
+//    struct arg_struct *args=(struct arg_struct *)arguments;
+//    std::pair<const Rule*, int> pair=args->tree->get_matching_rule(*args->packetHeader);
+//    int best_match_priority=*(args->priority);
+//    const Rule* cur_rule=pair.first;
+//    if(cur_rule!= nullptr and cur_rule->priority>=best_match_priority){
+//        mutex.lock();
+//        *(args->bestMatch)=cur_rule;
+//        *(args->priority)=cur_rule->priority;
+//        mutex.unlock();
+//    }
+//    pthread_exit(NULL);
+//}
+//
+//
+//std::pair<const Rule*, int>  TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
+//    pthread_t threads[clusters.size()];
+//    int priority=0;
+//    int index=0;
+//    const Rule* best_match= nullptr;
+//    for(TreeTrieEpsilonCluster* cluster : clusters){ //todo: to add multithreading.
+////        //create thread, send mission
+////        const Rule* match = cluster->get_matching_rule(header);
+////        if(match != nullptr && match->priority >= best_match_priority){
+////            best_match = match;
+////            best_match_priority = match->priority;
+////        }
+//        struct arg_struct my_args;
+//        my_args.priority=&priority;
+//        my_args.bestMatch= &best_match;
+//        my_args.packetHeader=&header;
+//        my_args.tree=cluster;
+//        pthread_create(&threads[index],NULL,get_matching_by_thread,(void *)&my_args);
+//        index+=1;
+//    }
+//}
 
-std::pair<const Rule*, int>  TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
-    pthread_t threads[clusters.size()];
-    int priority=0;
-    int index=0;
+std::pair<const Rule*, int> TreeTrieEpsilon::get_matching_rule(const PacketHeader &header) const {
+    int best_match_priority = 0;
     const Rule* best_match= nullptr;
-    for(TreeTrieEpsilonCluster* cluster : clusters){ //todo: to add multithreading.
-//        //create thread, send mission
-//        const Rule* match = cluster->get_matching_rule(header);
-//        if(match != nullptr && match->priority >= best_match_priority){
-//            best_match = match;
-//            best_match_priority = match->priority;
-//        }
-        struct arg_struct my_args;
-        my_args.priority=&priority;
-        my_args.bestMatch= &best_match;
-        my_args.packetHeader=&header;
-        my_args.tree=cluster;
-        pthread_create(&threads[index],NULL,get_matching_by_thread,(void *)&my_args);
-        index+=1;
+    int nodes_seen = 0;
+    for(TreeTrieEpsilonCluster* cluster : clusters) {
+        std::pair<const Rule *, int> match_pair = cluster->get_matching_rule(header);
+        const Rule *match = match_pair.first;
+        nodes_seen += match_pair.second;
+        if (match != nullptr && match->priority >= best_match_priority) {
+            best_match = match;
+            best_match_priority = match->priority;
+        }
     }
+    return std::make_pair(best_match, nodes_seen);
 }
 
 void TreeTrieEpsilon::add_rule(const Rule &rule) {
