@@ -10,8 +10,7 @@
 #define P_TRIE 1
 
 std::mutex mutex;
-
-
+int RegularTrie::id_counter=0;
 int EpsilonT::id_counter=0;
 RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
     if(root == nullptr){
@@ -36,6 +35,9 @@ RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
 
 void RegularTrie::add_rule(const Rule& rule) {
     std::string prefix = use_source_address ? rule.source_address : rule.destination_address;
+    if(rule.rule_name=="Rule 67"){
+        printf("ggg");
+    }
     Node* node = createPrefixNode(prefix);
     node->rules.push_back(&rule);
 }
@@ -285,6 +287,9 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
     int nodes_seen = 0;
     int bit_string_position = 0;
     for(char c : address){
+        if(current!= nullptr and current->id==190){
+            printf("ggg");
+        }
         nodes_seen++;
         bool epsilon_nodes = false;
         if(bit_string_position < current->bs.length()){
@@ -298,6 +303,9 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
         }
         while(current->mid!= nullptr)
         {
+            if(current!= nullptr and current->id==190){
+                printf("ggg");
+            }
             epsilon_nodes = true;
             nodes_seen++;
             for (const Rule* rule : current->rule_list){
@@ -347,6 +355,7 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
         bit_string_position = 0;
     }
     return std::make_pair(best_match, nodes_seen);
+
 }
 void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
     bool is_deleted= false;

@@ -4,7 +4,7 @@
 
 #ifndef SRA_DATA_STRUCTURES_H
 #define SRA_DATA_STRUCTURES_H
-
+#define PTRIE 1
 #include "rules.h"
 #include <string>
 #include <list>
@@ -23,15 +23,16 @@ class PacketClassifier{
 class RegularTrie : PacketClassifier{
     class Node {
     public:
+        int id;
         Node* zero;
         Node* one;
         Node* prev;
         std::list<const Rule*> rules;
 
-        Node() : zero(nullptr), one(nullptr), prev(nullptr), rules() {}
-        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), rules() {}
+        Node() : zero(nullptr), one(nullptr), prev(nullptr), rules() {id=id_counter;id_counter++;}
+        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), rules() {id=id_counter;id_counter++;}
     };
-
+    static int id_counter;
     Node* root;
     bool use_source_address;
 public:

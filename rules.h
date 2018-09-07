@@ -9,6 +9,7 @@
 
 class Rule{
 public:
+    std::string way_to_rule;
     std::string source_address;
     std::string destination_address;
     int source_adress_start,source_adress_end;
