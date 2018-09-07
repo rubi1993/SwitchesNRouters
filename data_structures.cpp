@@ -134,6 +134,20 @@ void RegularTrie::removeSubtreeLeaves(RegularTrie::Node *subroot, std::list<cons
     }else{
         removeSubtreeLeaves(subroot->zero, rule_list);
         removeSubtreeLeaves(subroot->one, rule_list);
+        if(subroot->zero == nullptr && subroot->one == nullptr && subroot->rules.size() == 0){
+            Node* temp = subroot;
+            subroot = subroot->prev;
+            if(subroot != nullptr){
+                if(subroot->zero == temp){
+                    subroot->zero = nullptr;
+                }else{
+                    subroot->one = nullptr;
+                }
+            }else{
+                root = nullptr;
+            }
+            delete temp;
+        }
     }
 }
 
@@ -261,6 +275,9 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
     if(root == nullptr){
         return std::make_pair((const Rule*)nullptr, 0);
     }
+    if(header.source_address == "01111000" && header.destination_address == "01000001"){
+        int s = 1;
+    }
     Node* current = root;
     const Rule* best_match = nullptr;
     std::string address = header.destination_address;
@@ -270,9 +287,7 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
     for(char c : address){
         nodes_seen++;
         bool epsilon_nodes = false;
-        if(current->bs.length() == 0){
-            bit_string_position = 0;
-        }else if(bit_string_position < current->bs.length()){
+        if(bit_string_position < current->bs.length()){
             if(current->bs[bit_string_position] == c){
                 bit_string_position++;
                 nodes_seen--;
@@ -329,6 +344,7 @@ std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& head
             }
             current = current->one;
         }
+        bit_string_position = 0;
     }
     return std::make_pair(best_match, nodes_seen);
 }
@@ -414,7 +430,7 @@ void EpsilonT::DFSUtil(Node * node,std::map<int,bool> visited){
             is_deleted=true;
         }
     }
-    visited[node->id]=true;
+    visited[cur_node->id]=true;
     if(cur_node->mid!= nullptr and !visited.count(node->mid->id)){
         DFSUtil(cur_node->mid,visited);
     }
@@ -471,6 +487,9 @@ EpsilonT::~EpsilonT() {
 }
 
 void EpsilonT::add_rule(const Rule& rule) {
+    if(rule.rule_name == "Rule 67"){
+        int s = 1;
+    }
     std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
     if(node->rule_list.size() == P_TRIE){
@@ -566,6 +585,9 @@ TreeTrieEpsilonCluster::~TreeTrieEpsilonCluster() {
 }
 
 void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
+    if(rule.rule_name == "Rule 67"){
+        int s = 1;
+    }
     std::string prefix = rule.source_address;
     if(root == nullptr){
         if(prefix[prefix.length() - 1] == '*'){

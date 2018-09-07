@@ -30,7 +30,7 @@ int main() {
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
     int p_trie = 1;
-    for(int i = 0; i < 2000; i++){
+    for(int i = 0; i < 80; i++){
         std::string source_address = "";
         for(int j=0; j < length_distribution(generator); j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
