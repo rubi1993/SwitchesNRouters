@@ -30,7 +30,7 @@ int main() {
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
     int p_trie = 1;
-    for(int i = 0; i < 20000; i++){
+    for(int i = 0; i < 2000; i++){
         std::string source_address = "";
         for(int j=0; j < length_distribution(generator); j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
@@ -100,25 +100,3 @@ int main() {
     std::cout << "Done." << std::endl;
     return 0;
 }
-/*
- * Header 0: 11011111 01101111 208 262 TCP -> [TrieOfTries] Matching Rule: Rule 199937, Nodes Seen: 18705 ?=? [TreeTrieEpsilon]Rule 199937, Nodes Seen:3631
-Header 1: 10100101 11100111 783 898 UDP -> [TrieOfTries] Matching Rule: Rule 199660, Nodes Seen: 18749 ?=? [TreeTrieEpsilon]Rule 199660, Nodes Seen:5990
-Header 2: 11110010 00101100 625 357 UDP -> [TrieOfTries] Matching Rule: Rule 199918, Nodes Seen: 18577 ?=? [TreeTrieEpsilon]Rule 199918, Nodes Seen:6671
-Header 3: 00111000 10110001 137 516 TCP -> [TrieOfTries] Matching Rule: Rule 199907, Nodes Seen: 18712 ?=? [TreeTrieEpsilon]Rule 199907, Nodes Seen:6796
-Header 4: 01100100 00100010 183 706 TCP -> [TrieOfTries] Matching Rule: Rule 199711, Nodes Seen: 18576 ?=? [TreeTrieEpsilon]Rule 199711, Nodes Seen:6002
-Header 5: 00001100 10110000 652 563 TCP -> [TrieOfTries] Matching Rule: Rule 199981, Nodes Seen: 18691 ?=? [TreeTrieEpsilon]Rule 199981, Nodes Seen:1520
-Header 6: 11100111 00011001 367 41 UDP -> [TrieOfTries] Matching Rule: Rule 199967, Nodes Seen: 18610 ?=? [TreeTrieEpsilon]Rule 199967, Nodes Seen:5942
-Header 7: 01100111 01100101 875 908 UDP -> [TrieOfTries] Matching Rule: Rule 199090, Nodes Seen: 18527 ?=? [TreeTrieEpsilon]Rule 199090, Nodes Seen:6701
-Header 8: 01111111 01101111 934 859 UDP -> [TrieOfTries] Matching Rule: Rule 199656, Nodes Seen: 18538 ?=? [TreeTrieEpsilon]Rule 199656, Nodes Seen:3496
-Header 9: 10010101 10001101 584 467 UDP -> [TrieOfTries] Matching Rule: Rule 199768, Nodes Seen: 18842 ?=? [TreeTrieEpsilon]Rule 199768, Nodes Seen:6846
-Header 10: 10110000 10000000 794 441 TCP -> [TrieOfTries] Matching Rule: Rule 199840, Nodes Seen: 18831 ?=? [TreeTrieEpsilon]Rule 199840, Nodes Seen:5964
-Header 11: 11001011 00111100 774 430 UDP -> [TrieOfTries] Matching Rule: Rule 199918, Nodes Seen: 18684 ?=? [TreeTrieEpsilon]Rule 199918, Nodes Seen:6679
-Header 12: 01100111 00011110 372 422 TCP -> [TrieOfTries] Matching Rule: Rule 199945, Nodes Seen: 18528 ?=? [TreeTrieEpsilon]Rule 199945, Nodes Seen:5993
-Header 13: 11000000 10010000 952 369 TCP -> [TrieOfTries] Matching Rule: Rule 199892, Nodes Seen: 18706 ?=? [TreeTrieEpsilon]Rule 199892, Nodes Seen:3450
-Header 14: 10100010 01010000 459 912 UDP -> [TrieOfTries] Matching Rule: Rule 199659, Nodes Seen: 18594 ?=? [TreeTrieEpsilon]Rule 199659, Nodes Seen:6691
-Header 15: 10010110 00111111 967 785 UDP -> [TrieOfTries] Matching Rule: Rule 199783, Nodes Seen: 18377 ?=? [TreeTrieEpsilon]Rule 199783, Nodes Seen:3473
-Header 16: 10010001 10110100 393 390 UDP -> [TrieOfTries] Matching Rule: Rule 199967, Nodes Seen: 18730 ?=? [TreeTrieEpsilon]Rule 199967, Nodes Seen:5980
-Header 17: 01000000 11101010 148 688 TCP -> [TrieOfTries] Matching Rule: Rule 199597, Nodes Seen: 18691 ?=? [TreeTrieEpsilon]Rule 199597, Nodes Seen:6804
-Header 18: 01000101 10010000 190 297 UDP -> [TrieOfTries] Matching Rule: Rule 199964, Nodes Seen: 18697 ?=? [TreeTrieEpsilon]Rule 199964, Nodes Seen:6147
-Header 19: 11010010 00011001 115 90 UDP -> [TrieOfTries] Matching Rule: Rule 199745, Nodes Seen: 18656 ?=? [TreeTrieEpsilon]Rule 199745, Nodes Seen:6689
- */
