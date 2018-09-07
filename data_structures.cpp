@@ -487,9 +487,6 @@ EpsilonT::~EpsilonT() {
 }
 
 void EpsilonT::add_rule(const Rule& rule) {
-    if(rule.rule_name == "Rule 67"){
-        int s = 1;
-    }
     std::string prefix = rule.destination_address;
     Node* node = createPrefixNode(prefix);
     if(node->rule_list.size() == P_TRIE){
@@ -585,9 +582,6 @@ TreeTrieEpsilonCluster::~TreeTrieEpsilonCluster() {
 }
 
 void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
-    if(rule.rule_name == "Rule 67"){
-        int s = 1;
-    }
     std::string prefix = rule.source_address;
     if(root == nullptr){
         if(prefix[prefix.length() - 1] == '*'){
