@@ -10,7 +10,6 @@
 #include <list>
 #include <map>
 #include <utility>
-#include <iostream>
 
 #define SPFAC 4
 int int_counter(std::string str);
@@ -101,9 +100,7 @@ public:
     static int id_counter;
     int p_trie;
 public:
-    EpsilonT(int p_t = 1) : root(nullptr), p_trie(1) {if(p_t == 0){
-            std::cout << "Test " << std::endl;
-        }}
+    EpsilonT(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~EpsilonT();
     bool is_empty() {return root == nullptr;}
     void destroySubtree(Node* subroot);
@@ -127,19 +124,15 @@ class TreeTrieEpsilonCluster : PacketClassifier{
         std::string prefix;
         int p_trie;
         EpsilonT* trie;
-        Node(int p_t = 1) : left(nullptr), right(nullptr), prev(nullptr), p_trie(1), trie(new EpsilonT(1)) {}
-        Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT(1)) {
-            if(pre->p_trie == 0){
-                std::cout << "s" << std::endl;
-            }
-        }
+        Node(int p_t = 1) : left(nullptr), right(nullptr), prev(nullptr), p_trie(p_t), trie(new EpsilonT(p_t)) {}
+        Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT(prev->p_trie)) {}
         ~Node() {delete trie;}
     };
     Node* root;
     int p_trie;
 
 public:
-    TreeTrieEpsilonCluster(int p_t = 1) : root(nullptr), p_trie(1) {}
+    TreeTrieEpsilonCluster(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~TreeTrieEpsilonCluster();
     std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;
     void add_rule(const Rule& rule) override;
