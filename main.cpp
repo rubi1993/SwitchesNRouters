@@ -2,6 +2,8 @@
 #include <fstream>
 #include <random>
 #include <chrono>
+#include <stdio.h>
+#include <string.h>
 #include "rules.h"
 #include "data_structures.h"
 
@@ -165,9 +167,102 @@ void run_tests(int num_of_experiments = 10, std::ostream& output = std::cout,
 
 }
 
+std::string convertToBinary(unsigned int n)
+{
+    std::string temp;
+    if (n / 2 != 0) {
+        temp+=convertToBinary(n / 2);
+    }
+    temp+=std::to_string(n%2);
+    return temp;
+}
+std::string wrap_with_zeros(std::string ip){
+    if(ip.size()<8){
+        while(ip.size()!=8){
+            ip="0"+ip;
+        }
+    }
+    return ip;
+}
+
+std::string ipv4_to_binary(std::string ip_address){
+    const char *ip_address_char = ip_address.c_str();
+    int n1, n2, n3, n4;
+    std::string n1_str,n2_str,n3_str,n4_str,binary_ip;
+    sscanf(ip_address_char, "%d.%d.%d.%d", &n1, &n2, &n3, &n4);
+    n1_str=wrap_with_zeros(convertToBinary(n1));
+    n2_str=wrap_with_zeros(convertToBinary(n2));
+    n3_str=wrap_with_zeros(convertToBinary(n3));
+    n4_str=wrap_with_zeros(convertToBinary(n4));
+    binary_ip=n1_str+n2_str+n3_str+n4_str;
+    return binary_ip;
+}
+
+const Rule* create_rule_from_file(std::string line,int priority){
+    std::string del= ",",protocol;
+    std::string source_ip,source_ip_binary,dest_ip_or_source_offset,source_offset,dest_ip="",dest_ip_binary;
+    std::string dest_offset_or_source_port,dest_offset="",source_port_range,dest_port_or_port_range;
+    int dest_port_start,dest_port_end;
+    int source_port_start,source_port_end;
+    source_ip=line.substr(0,line.find(del));
+    source_ip_binary=ipv4_to_binary(source_ip);
+    line.erase(0, line.find(del) + del.length());
+    dest_ip_or_source_offset=line.substr(0,line.find(del));
+    line.erase(0, line.find(del) + del.length());
+    if(dest_ip_or_source_offset.find(".")!=std::string::npos){
+        dest_ip=dest_ip_or_source_offset;
+    }else{
+        // remove offset from source address
+        source_offset=dest_ip_or_source_offset;
+        int offset_int=0;
+        offset_int=std::stoi(source_offset);
+        source_ip_binary=source_ip_binary.substr(0,offset_int);
+    }
+    if(dest_ip==""){
+        dest_ip=line.substr(0,line.find(del));
+        line.erase(0, line.find(del) + del.length());
+        dest_ip_binary=ipv4_to_binary(dest_ip);
+    }
+    dest_offset_or_source_port=line.substr(0,line.find(del));
+    line.erase(0, line.find(del) + del.length());
+    if(dest_offset_or_source_port.find("-")==std::string::npos){
+        // cut offset of dest
+        dest_offset=dest_offset_or_source_port;
+        int dest_offset_int=0;
+        dest_offset_int=std::stoi(dest_offset);
+        dest_ip_binary=dest_ip_binary.substr(0,dest_offset_int);
+    }else{
+        source_port_range=dest_offset_or_source_port;
+    }
+    if(dest_offset!=""){
+        source_port_range=line.substr(0,line.find(del));
+        line.erase(0, line.find(del) + del.length());
+    }
+    source_port_start=std::stoi(source_port_range.substr(0,source_port_range.find("-")));
+    source_port_range.erase(0, source_port_range.find("-") + 1);
+    source_port_end=std::stoi(source_port_range);
+    dest_port_or_port_range=line.substr(0,line.find(del));
+    line.erase(0, line.find(del) + del.length());
+    if(dest_port_or_port_range.find("-")==std::string::npos){
+        dest_port_start=std::stoi(dest_port_or_port_range);
+        dest_port_end=std::stoi(dest_port_or_port_range);
+    }else{
+        dest_port_start=std::stoi(dest_port_or_port_range.substr(0,dest_port_or_port_range.find("-")));
+        dest_port_or_port_range.erase(0,dest_port_or_port_range.find("-")+1);
+        dest_port_end=std::stoi(dest_port_or_port_range);
+    }
+    protocol=line;
+    return new Rule(source_ip_binary,dest_ip_binary,source_port_start,source_port_end,dest_port_start,dest_port_end,protocol,priority,std::to_string(priority));
+}
+
+
 int main() {
     std::ofstream file;
     file.open("test.txt");
+    std::string test_line("207.80.32.18, 48.120.181.150 , 0-65535 ,61200 , 61209 ,6");
+    create_rule_from_file(test_line,1);
+    for(int i = 0; i < 100000; i  += 10000){
+        run_tests(2, file, 50000, 1000, false, false, false, true);
     for(int rule_number = 0; rule_number < 30000; rule_number  += 1000){
         run_tests(10, file, rule_number, 1000, false, false, false, true);
     }
