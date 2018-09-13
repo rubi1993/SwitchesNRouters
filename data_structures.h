@@ -39,6 +39,7 @@ class RegularTrie : PacketClassifier{
 public:
     static size_t get_max_node_size() {return max_node_size;}
     static int get_total_node_number() {return id_counter;}
+    static void reset_tracking_values() {max_node_size = 0; id_counter =0;}
     RegularTrie() : root(nullptr), use_source_address(false) {}
     RegularTrie(bool flag) : root(nullptr), use_source_address(flag) {};
     ~RegularTrie();
@@ -73,6 +74,7 @@ class TrieOfTries : PacketClassifier{
 public:
     static size_t get_max_node_size() {return max_node_size;}
     static int get_total_node_number() {return id_counter;}
+    static void reset_tracking_values() {max_node_size = 0; id_counter =0;}
     TrieOfTries() : root(nullptr) {}
     TrieOfTries(std::list<const Rule*> rule_table);
     ~TrieOfTries();
@@ -111,6 +113,7 @@ public:
 public:
     static size_t get_max_node_size() {return max_node_size;}
     static int get_total_node_number() {return id_counter;}
+    static void reset_tracking_values() {max_node_size = 0; id_counter =0;}
     EpsilonT(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~EpsilonT();
     bool is_empty() {return root == nullptr;}
@@ -149,6 +152,7 @@ public:
 public:
     static size_t get_max_node_size() {return max_node_size;}
     static int get_total_node_number() {return id_counter;}
+    static void reset_tracking_values() {max_node_size = 0; id_counter =0;}
     TreeTrieEpsilonCluster(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~TreeTrieEpsilonCluster();
     std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;

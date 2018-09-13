@@ -751,6 +751,7 @@ TreeTrieEpsilon::TreeTrieEpsilon(std::list<const Rule *> rule_table, int p_t) {
 }
 
 TreeTrieEpsilon::~TreeTrieEpsilon() {
+    total_time = 0;
     for(TreeTrieEpsilonCluster* cluster : clusters){
         delete cluster;
     }
@@ -762,12 +763,12 @@ struct arg_struct {
     const PacketHeader* packetHeader;
     const Rule** bestMatch;
     int* nodes_seen;
-    double *max_time;
+    long double *max_time;
 };
 
 void* get_matching_by_thread(void *arguments){
     struct timespec start1,finish1;
-    double time;
+    long double time;
     clock_gettime(CLOCK_REALTIME, &start1);
     struct arg_struct *args=(struct arg_struct *)arguments;
     std::pair<const Rule*, int> pair=args->tree->get_matching_rule(*args->packetHeader);
@@ -785,7 +786,7 @@ void* get_matching_by_thread(void *arguments){
     mutex.unlock();
     clock_gettime(CLOCK_REALTIME, &finish1);
     time += (finish1.tv_sec - start1.tv_sec);
-    time += (finish1.tv_nsec - start1.tv_nsec);
+    time += (finish1.tv_nsec - start1.tv_nsec) / 1000000000.0;
     if(time>*(args->max_time)){
         *(args->max_time)=time;
     }
@@ -798,7 +799,7 @@ std::pair<const Rule*, int>  TreeTrieEpsilon::get_matching_rule(const PacketHead
     int priority=0;
     int index=0;
     int nodes_seen = 0;
-    double max_time=0;
+    long double max_time=0;
     const Rule* best_match= nullptr;
     struct arg_struct my_args[clusters.size()];
     for(TreeTrieEpsilonCluster* cluster : clusters){
