@@ -253,7 +253,7 @@ initially, the algorithm builds a uni-bit trie using the SA prefixes.
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename /cs/usr/rubi1993/Desktop/switch1.png
+	filename switch1.png
 	lyxscale 30
 	scale 30
 
@@ -347,8 +347,7 @@ Path Compression (PC)
 
 \begin_layout Standard
 \begin_inset Graphics
-	filename /cs/usr/rubi1993/Desktop/lyx-handout/switch2.gif
-	scale 30
+	filename switch4.png
 
 \end_inset
 
