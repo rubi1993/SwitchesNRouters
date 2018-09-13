@@ -33,9 +33,12 @@ class RegularTrie : PacketClassifier{
         Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), rules() {id=id_counter;id_counter++;}
     };
     static int id_counter;
+    static size_t max_node_size;
     Node* root;
     bool use_source_address;
 public:
+    static size_t get_max_node_size() {return max_node_size;}
+    static int get_total_node_number() {return id_counter;}
     RegularTrie() : root(nullptr), use_source_address(false) {}
     RegularTrie(bool flag) : root(nullptr), use_source_address(flag) {};
     ~RegularTrie();
@@ -59,13 +62,17 @@ class TrieOfTries : PacketClassifier{
         Node* prev;
         RegularTrie* trie;
 
-        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(nullptr) {}
-        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(nullptr) {}
+        Node() : zero(nullptr), one(nullptr), prev(nullptr), trie(nullptr) {id_counter++;}
+        Node(Node* pre) : zero(nullptr), one(nullptr), prev(pre), trie(nullptr) {id_counter++;}
         ~Node() {if(trie!= nullptr) {delete trie;}}
     };
     Node* root;
+    static size_t max_node_size;
+    static int id_counter;
 
 public:
+    static size_t get_max_node_size() {return max_node_size;}
+    static int get_total_node_number() {return id_counter;}
     TrieOfTries() : root(nullptr) {}
     TrieOfTries(std::list<const Rule*> rule_table);
     ~TrieOfTries();
@@ -99,8 +106,11 @@ public:
 
     Node* root;
     static int id_counter;
+    static size_t max_node_size;
     int p_trie;
 public:
+    static size_t get_max_node_size() {return max_node_size;}
+    static int get_total_node_number() {return id_counter;}
     EpsilonT(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~EpsilonT();
     bool is_empty() {return root == nullptr;}
@@ -132,10 +142,13 @@ public:
         ~Node() {delete trie;}
     };
     static int id_counter;
+    static size_t max_node_size;
     Node* root;
     int p_trie;
 
 public:
+    static size_t get_max_node_size() {return max_node_size;}
+    static int get_total_node_number() {return id_counter;}
     TreeTrieEpsilonCluster(int p_t = 1) : root(nullptr), p_trie(p_t) {}
     ~TreeTrieEpsilonCluster();
     std::pair<const Rule*, int> get_matching_rule(const PacketHeader& header) const override;

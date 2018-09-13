@@ -10,9 +10,15 @@
 #define P_TRIE 1
 
 std::mutex mutex;
-int RegularTrie::id_counter=0;
-int TreeTrieEpsilonCluster::id_counter=0;
-int EpsilonT::id_counter=0;
+int RegularTrie::id_counter = 0;
+size_t RegularTrie::max_node_size = 0;
+int TreeTrieEpsilonCluster::id_counter = 0;
+size_t TreeTrieEpsilonCluster::max_node_size = 0;
+int EpsilonT::id_counter = 0;
+size_t EpsilonT::max_node_size = 0;
+int TrieOfTries::id_counter = 0;
+size_t TrieOfTries::max_node_size = 0;
+
 RegularTrie::Node * RegularTrie::createPrefixNode(std::string prefix){
     if(root == nullptr){
         root = new Node();
@@ -38,6 +44,13 @@ void RegularTrie::add_rule(const Rule& rule) {
     std::string prefix = use_source_address ? rule.source_address : rule.destination_address;
     Node* node = createPrefixNode(prefix);
     node->rules.push_back(&rule);
+    size_t node_size = sizeof(*node);
+    for(auto rule:node->rules){
+        node_size += sizeof(rule);
+    }
+    if(node_size > max_node_size){
+        max_node_size = node_size;
+    }
 }
 
 void RegularTrie::remove_rule(const Rule &rule) {
@@ -186,6 +199,9 @@ void TrieOfTries::add_rule(const Rule& rule) {
         node->trie = new RegularTrie();
     }
     node->trie->add_rule(rule);
+    if(sizeof(*node) > max_node_size){
+        max_node_size = sizeof(*node);
+    }
 }
 
 void TrieOfTries::remove_rule(const Rule &rule) {
@@ -268,15 +284,15 @@ TrieOfTries::TrieOfTries(std::list<const Rule *> rule_table) {
             node->trie = new RegularTrie();
         }
         node->trie->add_rule(*rule);
+        if(sizeof(*node) > max_node_size){
+            max_node_size = sizeof(*node);
+        }
     }
 }
 
 std::pair<const Rule*, int> EpsilonT::get_matching_rule(const PacketHeader& header) const {
     if(root == nullptr){
         return std::make_pair((const Rule*)nullptr, 0);
-    }
-    if(header.source_address == "01111000" && header.destination_address == "01000001"){
-        int s = 1;
     }
     Node* current = root;
     const Rule* best_match = nullptr;
@@ -510,6 +526,13 @@ void EpsilonT::add_rule(const Rule& rule) {
     }else{
         node->rule_list.push_back(&rule);
     }
+    size_t node_size = sizeof(*node);
+    for(auto rule:node->rule_list){
+        node_size += sizeof(rule);
+    }
+    if(node_size > max_node_size){
+        max_node_size = node_size;
+    }
 }
 
 
@@ -606,6 +629,9 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
                 current->left = new Node(current);
                 current->left->trie->add_rule(rule);
                 current->left->prefix = prefix;
+                if(sizeof(*current) > max_node_size){
+                    max_node_size = sizeof(*current);
+                }
                 return;
             }
             current = current->left;
@@ -614,12 +640,18 @@ void TreeTrieEpsilonCluster::add_rule(const Rule& rule) {
                 current->right = new Node(current);
                 current->right->trie->add_rule(rule);
                 current->right->prefix = prefix;
+                if(sizeof(*current) > max_node_size){
+                    max_node_size = sizeof(*current);
+                }
                 return;
             }
             current = current->right;
         }
     }
     current->trie->add_rule(rule);
+    if(sizeof(*current) > max_node_size){
+        max_node_size = sizeof(*current);
+    }
 }
 
 void TreeTrieEpsilonCluster::remove_rule(const Rule& rule) {

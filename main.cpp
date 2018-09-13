@@ -4,6 +4,9 @@
 #include "rules.h"
 #include "data_structures.h"
 
+#define NUMBER_OF_RULES 200000
+#define NUMBER_OF_HEADERS 2000
+
 int main() {
 //    Rule test_rule("00*", "010*", 22, 34, -1, -1, "TCP", 21, "Rule 1");
 //    Rule test_rule2("011*", "1111*", 22, 34, -1, -1, "TCP", 1, "Rule 2");
@@ -91,7 +94,7 @@ int main() {
     std::uniform_int_distribution<int> length_distribution(0,8);
     std::uniform_int_distribution<int> port_distribution(0,1000);
     int p_trie = 1;
-    for(int i = 0; i < 2000; i++){
+    for(int i = 0; i < NUMBER_OF_RULES; i++){
         std::string source_address = "";
         for(int j=0; j < length_distribution(generator); j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
@@ -127,7 +130,7 @@ int main() {
     TrieOfTries test(rule_table);
     TreeTrieEpsilon test2(rule_table, p_trie);
     std::cout << "------------------------------------------------------------------" << std::endl;
-    for(int i = 0; i < 2000; i++){
+    for(int i = 0; i < NUMBER_OF_HEADERS; i++){
         std::string source_address = "";
         for(int j=0; j < 8; j++){
             source_address += binary_distribution(generator) == 0 ? '0' : '1';
@@ -158,9 +161,27 @@ int main() {
         }
 
     }
-    PacketHeader mainHeader("01111110","00110001",854,84,"TCP");
-    std::pair<const Rule*, int> returned_pair3 =test.get_matching_rule(mainHeader);
-    std::pair<const Rule*, int> returned_pair4 =test2.get_matching_rule(mainHeader);
+    size_t memory_usage1 = RegularTrie::get_total_node_number() * RegularTrie::get_max_node_size() +
+                           TrieOfTries::get_total_node_number() * TrieOfTries::get_max_node_size(),
+           memory_usage2 = EpsilonT::get_total_node_number() * EpsilonT::get_max_node_size() +
+                           TreeTrieEpsilonCluster::get_total_node_number() * TreeTrieEpsilonCluster::get_max_node_size();
+    std::cout << "------------------------------------------------------------------" << std::endl;
+    std::cout << "Memory Usage Summary:\n" <<
+                 "Trie of Tries: \n" <<
+                 "Number of Top Level Trie Nodes - " << TrieOfTries::get_total_node_number() << std::endl <<
+                 "Max Size of Top Level Trie Node - " << TrieOfTries::get_max_node_size() << std::endl <<
+                 "Number of Regular Trie Nodes - " << RegularTrie::get_total_node_number() << std::endl <<
+                 "Max Size of Regular Trie Node - " << RegularTrie::get_max_node_size() << std::endl <<
+                 "Estimated Total Real Hardware Implementation Memory Usage - " << memory_usage1 << std::endl <<
+                 "Estimated Bytes per Rule - " << memory_usage1 / NUMBER_OF_RULES << std::endl <<
+                 "\nEpsilon Tree Trie: \n" <<
+                 "Number of Top Level Trie Nodes - " << TreeTrieEpsilonCluster::get_total_node_number() << std::endl <<
+                 "Max Size of Top Level Trie Node - " << TreeTrieEpsilonCluster::get_max_node_size() << std::endl <<
+                 "Number of Regular Trie Nodes - " << EpsilonT::get_total_node_number() << std::endl <<
+                 "Max Size of Regular Trie Node - " << EpsilonT::get_max_node_size() << std::endl <<
+                 "Estimated Total Real Hardware Implementation Memory Usage - " << memory_usage2 << std::endl <<
+                 "Estimated Bytes per Rule - " << memory_usage2 / NUMBER_OF_RULES << std::endl <<
+                 std::endl;
     std::cout << "Done." << std::endl;
     return 0;
 }
