@@ -1,0 +1,479 @@
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass IEEEtran
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\graphics default
+\default_output_format default
+\output_sync 1
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing onehalf
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 1cm
+\rightmargin 2cm
+\bottommargin 2cm
+\headheight 1cm
+\headsep 1cm
+\footskip 1cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Hierarchical Hybrid Search Modification And Results 
+\end_layout
+
+\begin_layout Author
+Igor Alexandrov - Rubi Mizrachi
+\end_layout
+
+\begin_layout Special Paper Notice
+The Hebrew University of Jerusalem Jerusalem, Israel
+\end_layout
+
+\begin_layout Section
+Abstract
+\end_layout
+
+\begin_layout Standard
+In this article we wish to compare the results of Hierarchical search structure
+ that were suggested by Og̃uzhan Erdem , Hoang Le and Viktor K.
+ Prasanna 
+\begin_inset CommandInset href
+LatexCommand href
+name "[Link]"
+target "https://ieeexplore.ieee.org/document/6195565/"
+
+\end_inset
+
+ .
+ They claimed that the original Hierarchical search structure has two main
+ disadvantages, backtracking and inefficient memory usage due to variation
+ in size of the trie nodes.
+ They proposed a clustering algorithm that partition the rule database into
+ a fixed number of clusters that prevents backtracking.
+ They have also proposed a variant of the trie tree, called 
+\begin_inset Formula $T_{\epsilon}$
+\end_inset
+
+ , in which they fixed the problem of the inefficient memory usage by having
+ 1-to-1 relation between nodes in the tree and rules, creating a single
+ node for each rule.
+\begin_inset Newline newline
+\end_inset
+
+In our article we wish to validate the results achieved by the modified
+ 
+\begin_inset Quotes eld
+\end_inset
+
+trie tree
+\begin_inset Quotes erd
+\end_inset
+
+ , run tests over other classification algorithms and compare their performance.
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+In order to achieve our desired goal we started with implementing the Hierarchic
+al search structure that was proposed in the article, that demanded us to
+ create a regular trie tree (a tree with one root and left child or right
+ child if the next bit is zero or one, respectively and a list of fitting
+ rules in each node).
+ We also had to implement 
+\begin_inset Formula $T_{\epsilon}$
+\end_inset
+
+ tree structure - which is kind of similar to the regular trie tree except
+ of having 
+\begin_inset Formula $\epsilon$
+\end_inset
+
+-branch property which means that a node can have a child node that doesn't
+ depends on extra bit taken by the prefix IP address, and making
+\begin_inset Formula $\epsilon-move$
+\end_inset
+
+ simply takes us to the next node - with the same prefix , but with a different
+ rule , as said above, it prevents the situation of having multiple rules
+ on the same node, causing inefficient memory usage.In order to get both
+ of those structure working together - we also implemented a 
+\begin_inset Quotes eld
+\end_inset
+
+TrieOfTries
+\begin_inset Quotes erd
+\end_inset
+
+ structure which combined both of those structures into one, as presented
+ in the article we seek to validate.
+ 
+\end_layout
+
+\begin_layout Section
+Project Goals 
+\end_layout
+
+\begin_layout Standard
+In this project we wish to answer the following questions: 
+\end_layout
+
+\begin_layout Itemize
+Is it possible to implement the improved trie structure with a standard
+ programming language (C++), without the use of proper hardware that is
+ used by common routers (e.g SRAM) and still get adequate results.
+\end_layout
+
+\begin_layout Itemize
+Are the results reliable? We wish to test both of the original trie tree
+ and both of the improved and compare them in order to achieve similar efficienc
+y ratio as the original researches presented.
+\end_layout
+
+\begin_layout Itemize
+Does a modification in the rules database will change the results? We wish
+ to test the algorithm on a different databases of rules (uniform distribution
+ databases and databases that was used by other researches).
+\end_layout
+
+\begin_layout Itemize
+Is there any improvement we can suggest to be added to improved algorithm?
+ Or on the other hand, is there some feature in the improved algorithm that
+ we think could be dismissed because it is unnecessary for achieving good
+ results.
+\end_layout
+
+\begin_layout Itemize
+How good are the results compared to new algorithms that are being used
+ these days?
+\end_layout
+
+\begin_layout Section
+Algorithms And Data Structure Explained
+\end_layout
+
+\begin_layout Subsection
+Clustering Algorithm
+\end_layout
+
+\begin_layout Standard
+The tree structure we wish to achieve will have 2 stages: SA (source address)
+ stage and DA (destination stage) on which it will be derived from the rules
+ source address and destination address respectively , this 2-staged structure
+ will eliminate backtracking from SA to DA.
+ The algorithm takes a set of prefixes S and the number of clusters R as
+ its, and genrates a collection of non-empty subsets {
+\begin_inset Formula $S_{i}\}$
+\end_inset
+
+, (0
+\begin_inset Formula $\leq i$
+\end_inset
+
+<R).
+ Each subset is called a cluster.
+ in each cluster the SA prefixes are pairwise disjoint.
+\begin_inset Newline newline
+\end_inset
+
+initially, the algorithm builds a uni-bit trie using the SA prefixes.
+ afterward recursive leaf extraction is performed.
+ Each recursive Step i of the algorithm includes two sub-steps:(1) the leaf
+ nodes are removed from the trie and moved into set {
+\begin_inset Formula $S_{i}\}$
+\end_inset
+
+ and (2) the non-prefix leaf nodes are trimmed off the trie.
+ in fig 1 below the algorithm is presented and a simple example of the first
+ iteration of it.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename /cs/usr/rubi1993/Desktop/switch1.png
+	lyxscale 30
+	scale 30
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+fig 1
+\end_layout
+
+\begin_layout Subsection
+Stage One Of The Structure (SA tree)
+\end_layout
+
+\begin_layout Standard
+The stage one of the tree is simply a binary search tree (BST) and it is
+ built separately for each one of the clusters.
+ Each node in the SA tree includes:(1) a value (prefix of source address)
+ (2) a prefix length, (3) left pointer and (4)right pointer.The left sub-tree
+ of a node contains only values that are less than or equal to the value
+ stored in that node.Before constructing the BST, prefixes are sorted into
+ an array in ascending order.
+ Given the sorted array of prefixes, the BST is constructed by picking the
+ correct prefix and recursively building the left and the right subtrees.
+ As convention , all prefixes are extended to the length of the longest
+ prefix by appending with '0' bits.
+ 
+\begin_inset Newline newline
+\end_inset
+
+As mention before, using the cluster algorithm causes the prefixes in any
+ cluster to be pairwise disjoint,hence , extending the prefixes to a same
+ length should not cause overlapping.
+\end_layout
+
+\begin_layout Subsection
+Stage Two Of The Structure (DA tree)
+\end_layout
+
+\begin_layout Subsubsection
+\begin_inset Formula $T_{\epsilon}$
+\end_inset
+
+ Tree Structure 
+\end_layout
+
+\begin_layout Standard
+In previous paragraph we created the first stage of the structure,now each
+ node we created in previous stage is connected to a DA trie.
+ Therefore, in each cluster, the number of DA tries are equals to the number
+ of SA prefixes.
+ Each prefix node of a DA trie stores at least one rule.
+ In this structure each overlapped rule is stored in nodes rather than pointing
+ to a list of these rules, this structure is called, as mention above 
+\begin_inset Formula $T_{\epsilon}$
+\end_inset
+
+ tree, a single node in 
+\begin_inset Formula $T_{\epsilon}$
+\end_inset
+
+ may have a single epsilon branch for which no input bit is consumed or
+ '0' and
+\backslash
+or '1' branch, but can't have both epsilon branch with 0 or 1 branch.
+\end_layout
+
+\begin_layout Subsubsection
+Path Compression (PC) 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $T_{\epsilon}$
+\end_inset
+
+ structure can also be compressed , each non-prefix node of a trie can be
+ removed if it has a prefix node from the root.
+ in order to keep record of the nodes that were deleted , each node must
+ store a skip value (SV) - representing the number of bits that were skipped
+ and bit string (BS) - representing the exact bits that were skipped.In our
+ tests we deduce that the Path Compression decrease significantly the number
+ of nodes traversed through the trie - and the reason is quite straight
+ forward - instead of traversing through nodes in the tree with only one
+ child that doesn't contain any rule within , u just skip them using BV,SV
+ - but on the other hand it appears that there is a space - time tradeoff
+ , because BV,SV require every node to preserve some amount of bits in order
+ to store those two fields.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename /cs/usr/rubi1993/Desktop/lyx-handout/switch2.gif
+	scale 30
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+fig 2 - example of two staged tree of tries with path compression.
+\end_layout
+
+\begin_layout Subsection
+Multiprocessing 
+\end_layout
+
+\begin_layout Standard
+in order to achieve better results under this algorithm, one must use multiproce
+ssing over the clusters - which were created the way they created only for
+ that reason - in each cluster there are no two rules that one is a prefix
+ of the other one, in other words - every two rules in a cluster are not
+ a proper prefix of one another.
+ in order to make sure there are no backtracking within each cluster, and
+ every cluster can be processed separately and independently by the processors.
+ this method of working appears to be extremely efficient when dealing with
+ high number of rules, which causes a regular trie tree be extremely complex
+ and the traverse over it is very inefficient.
+ A clusters structure like the one that was presented in the article turns
+ out to be very efficient for those cases.
+ if the clusters that produced are tend to be balance the running time can
+ by the number of CPU's that are are been used by the improved trie algorithm.
+\begin_inset Newline newline
+\end_inset
+
+We used Ptheard C library in order to execute the search for a matching
+ rule in parallel, each thread got different cluster, the same rule , and
+ a shared memory that contained the best rule find by one of the threads
+ until now.
+ A mutex was needed in order to make sure that the shared variable is used
+ properly.
+ 
+\end_layout
+
+\begin_layout Section
+Main advantages 
+\end_layout
+
+\begin_layout Standard
+As the writers of the article have mention , the advantages they seek to
+ accomplish compare to the regular trie were skipping the backtracking part,
+ which 
+\begin_inset Quotes eld
+\end_inset
+
+costs
+\begin_inset Quotes erd
+\end_inset
+
+ a lot and makes it a lot less comfortable to work with multiprocessing
+ method.
+ the clustering algorithm indeed prevented the situation of backtracking
+ , even though it demands us to examine multiple objects (clusters) - we
+ don't mind - because all of this is intended to be done in parallel.
+ One more other thing that were prevented is the inefficiency with node
+ space, because of the 
+\begin_inset Quotes eld
+\end_inset
+
+unlimited
+\begin_inset Quotes erd
+\end_inset
+
+ list of rules size, the nodes could get bigger and bigger and a limit is
+ needed to be set, therefore, the authors have simplified this matter by
+ setting a limit to the number of nodes that might be created into specific
+ node, otherwise an 
+\begin_inset Quotes eld
+\end_inset
+
+epsilon-node
+\begin_inset Quotes erd
+\end_inset
+
+ will be created and the rest of the rules will be stored in it.
+ 
+\end_layout
+
+\begin_layout Section
+Main disadvantages
+\end_layout
+
+\begin_layout Standard
+During our research and while implementing the algorithm we tried to inspect
+ and give an estimation over the added features and came to some conclusions
+ in the matter.
+\begin_inset Newline newline
+\end_inset
+
+When we performed the Path Compress we noticed that there is probably no
+ other way of compressing the tree but to do it on the end of the creation
+ of the tree (rather than on-the-fly , while adding rule by rule) therefore
+ it causes some drawbacks - first it is very time expensive , as will be
+ shown below in the results section, the running time of tree construction
+ without PC is much bigger than the same tree without PC feature.
+ We could neglect that fact if the rule-search running time of a compressed
+ tree were much faster than a regular tree, but as will be presented below
+ as well, this is not the case - the way we see it - path compress doesn't
+ save a lot of time while searching through the tree, and the number of
+ 
+\begin_inset Quotes eld
+\end_inset
+
+visited nodes
+\begin_inset Quotes erd
+\end_inset
+
+ is quite the same with or without PC.
+ One other major disadvantages that we encountered is the fact that modifying
+ a tree structure,for example, adding rule after compressing is becoming
+ more sophisticated and it's a shame that it's not that easy compare to
+ the regular tree, in which adding and removing nodes or rules can be on
+ the fly.
+\end_layout
+
+\begin_layout Subsection
+
+\end_layout
+
+\end_body
+\end_document
