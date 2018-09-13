@@ -86,7 +86,8 @@ int main() {
 //    PacketHeader test_header("00000", "01011", 30, 853, "TCP");
 //    std::pair<const Rule*, int> returned_pair = test.get_matching_rule(test_header);
 //    std::cout << returned_pair.first->rule_name << ", Nodes Seen - " << returned_pair.second << std::endl;
-
+    struct timespec start1, finish1,start2,finish2;
+    double elapsed=0,elapsed2=0;
     std::list<const Rule*> rule_table;
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
@@ -148,8 +149,26 @@ int main() {
             protocol = "UDP";
         }
         PacketHeader header(source_address, destination_address, source_port, destination_port, protocol);
+
+        //time measurement for regular trie
+        clock_gettime(CLOCK_REALTIME, &start1);
+//        time(start1);
         std::pair<const Rule*, int> returned_pair = test.get_matching_rule(header);
+ //       time(finish1);
+        clock_gettime(CLOCK_REALTIME, &finish1);
+        elapsed += (finish1.tv_sec - start1.tv_sec);
+        elapsed += (finish1.tv_nsec - start1.tv_nsec);
+
+        //time measurement for improved trie
+
+//        clock_gettime(CLOCK_REALTIME, &start2);
+//        time(start2);
         std::pair<const Rule*, int> returned_pair2 = test2.get_matching_rule(header);
+//        time(finish2);
+//        clock_gettime(CLOCK_REALTIME, &finish2);
+//        elapsed2 += (finish2.tv_sec - start2.tv_sec);
+//        elapsed2 += (finish2.tv_nsec - start2.tv_nsec);
+
         std::cout << "Header " << i << ": " << source_address << " " << destination_address << " " << source_port \
                   <<  " " << destination_port << " " << protocol << " -> [TrieOfTries] Matching Rule: " << \
                   (returned_pair.first == nullptr ? "None" : returned_pair.first->rule_name) \
@@ -183,5 +202,7 @@ int main() {
                  "Estimated Bytes per Rule - " << memory_usage2 / NUMBER_OF_RULES << std::endl <<
                  std::endl;
     std::cout << "Done." << std::endl;
+    elapsed2=test2.total_time;
+   std::cout << "Done. Running time for Regular trie: "<< elapsed <<". Running time for improved trie: "<<elapsed2<< std::endl;
     return 0;
 }

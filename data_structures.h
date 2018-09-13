@@ -164,6 +164,7 @@ class TreeTrieEpsilon : PacketClassifier{
     std::list<TreeTrieEpsilonCluster*> clusters;
 
 public:
+    static double total_time;
     TreeTrieEpsilon() : clusters() {}
     TreeTrieEpsilon(std::list<const Rule*> rule_table, int p_t = 1);
     ~TreeTrieEpsilon();
