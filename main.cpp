@@ -118,47 +118,49 @@ std::pair<std::pair<double, long double>, std::pair<double, long double>> run_si
                   "Number of Regular Trie Nodes - " << RegularTrie::get_total_node_number() << std::endl <<
                   "Max Size of Regular Trie Node - " << RegularTrie::get_max_node_size() << std::endl <<
                   "Estimated Total Real Hardware Implementation Memory Usage - " << memory_usage1 << std::endl <<
-                  "Estimated Bytes per Rule - " << (rule_table.size() == 0 ? 0 : memory_usage1 / rule_table.size())  << std::endl <<
+                  "Estimated Bytes per Rule - " << (rule_table.size() == 0 ? 0 : memory_usage1 / (double) rule_table.size())  << std::endl <<
                   "\nEpsilon Tree Trie: \n" <<
                   "Number of Top Level Trie Nodes - " << TreeTrieEpsilonCluster::get_total_node_number() << std::endl <<
                   "Max Size of Top Level Trie Node - " << TreeTrieEpsilonCluster::get_max_node_size() << std::endl <<
                   "Number of Regular Trie Nodes - " << EpsilonT::get_total_node_number() << std::endl <<
                   "Max Size of Regular Trie Node - " << EpsilonT::get_max_node_size() << std::endl <<
                   "Estimated Total Real Hardware Implementation Memory Usage - " << memory_usage2 << std::endl <<
-                  "Estimated Bytes per Rule - " << (rule_table.size() == 0 ? 0 : memory_usage2 / rule_table.size()) << std::endl <<
+                  "Estimated Bytes per Rule - " << (rule_table.size() == 0 ? 0 : memory_usage2 / (double) rule_table.size()) << std::endl <<
                   std::endl;
 
         std::cout << "Running time for Trie of Tries: " << elapsed << "\nRunning time for Tree Trie Epsilon: " << elapsed2
                   << std::endl << std::endl;
     }
-    return std::make_pair(std::make_pair((rule_table.size() == 0 ? 0 : memory_usage1 / rule_table.size()), elapsed),
-                          std::make_pair((rule_table.size() == 0 ? 0 : memory_usage2 / rule_table.size()), elapsed2));
+    return std::make_pair(std::make_pair(memory_usage1, elapsed),
+                          std::make_pair(memory_usage2, elapsed2));
 }
 
 void run_tests(int num_of_experiments = 10, std::ostream& output = std::cout,
                int num_of_rules = 10000, int num_of_headers = 1000,
                bool verbose = false, bool print_rules = false,
                bool print_headers = false, bool print_summaries= false){
-    double average_per_rule1 = 0, average_per_rule2 = 0;
+    double average_memory1 = 0, average_memory2 = 0;
     long double average_runtime1 = 0, average_runtime2 = 0;
     for(int i = 0; i < num_of_experiments; i++){
         std::list<const Rule *> rule_table = generate_rules(num_of_rules, print_rules);
         std::list<const PacketHeader*> header_list = generate_headers(num_of_headers, print_headers);
         auto test_results = run_single_test(rule_table, header_list, print_summaries);
-        average_per_rule1 += test_results.first.first / num_of_experiments;
-        average_per_rule2 += test_results.second.first / num_of_experiments;
+        average_memory1 += test_results.first.first / num_of_experiments;
+        average_memory2 += test_results.second.first / num_of_experiments;
         average_runtime1 += test_results.first.second / num_of_experiments;
         average_runtime2 += test_results.second.second / num_of_experiments;
     }
     if(verbose){
         output << "\nAverage Results for " << num_of_experiments << " Experiments:\n" <<
-                  "Trie of Tries:\n Bytes per Rule - " << average_per_rule1 <<
+                  "Trie of Tries:\n Estimated Memory - " << average_memory1 <<
+                  "\n Bytes per Rule - " << average_memory1 / num_of_rules << std::endl <<
                   "\n Runtime - " << average_runtime1 << std::endl <<
-                  "Epsilon Tree Trie:\n Bytes per Rule - " << average_per_rule2 <<
-                  "\n Runtime - " << average_runtime2  << std::endl;
+                  "Epsilon Tree Trie:\n Estimated Memory - " << average_memory2 <<
+                  "\n Bytes per Rule - " << average_memory2 / num_of_rules << std::endl <<
+                  "\n Runtime - " <<  average_runtime2 << std::endl;
     }else{
-        output << num_of_rules << " " << average_per_rule1 << " " <<  average_runtime1 << " " <<
-                                               average_per_rule2 << " "<< average_runtime2 << std::endl;
+        output << num_of_rules << " " << average_memory1 << " " <<  average_runtime1 << " " <<
+                                         average_memory2 << " "<< average_runtime2 << std::endl;
     }
 
 }
@@ -166,7 +168,7 @@ void run_tests(int num_of_experiments = 10, std::ostream& output = std::cout,
 int main() {
     std::ofstream file;
     file.open("test.txt");
-    for(int rule_number = 0; rule_number < 100000; rule_number  += 10000){
+    for(int rule_number = 0; rule_number < 30000; rule_number  += 1000){
         run_tests(10, file, rule_number, 1000, false, false, false, true);
     }
     file.close();
