@@ -117,18 +117,21 @@ private:
 };
 
 class TreeTrieEpsilonCluster : PacketClassifier{
+public:
     class Node {
     public:
         Node* left;
         Node* right;
         Node* prev;
+        int id;
         std::string prefix;
         int p_trie;
         EpsilonT* trie;
-        Node(int p_t = 1) : left(nullptr), right(nullptr), prev(nullptr), p_trie(p_t), trie(new EpsilonT(p_t)) {}
-        Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT(prev->p_trie)) {}
+        Node(int p_t = 1) : left(nullptr), right(nullptr), prev(nullptr), p_trie(p_t), trie(new EpsilonT(p_t)) {id=id_counter; id_counter++;}
+        Node(Node* pre) : left(nullptr), right(nullptr), prev(pre), trie(new EpsilonT(prev->p_trie)) {id=id_counter; id_counter++;}
         ~Node() {delete trie;}
     };
+    static int id_counter;
     Node* root;
     int p_trie;
 
