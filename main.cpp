@@ -1,12 +1,10 @@
 #include <iostream>
+#include <fstream>
 #include <random>
 #include <chrono>
 #include "rules.h"
 #include "data_structures.h"
 
-#define NUMBER_OF_RULES 100000
-#define NUMBER_OF_HEADERS 1000
-#define NUMBER_OF_EXPERIMENTS 10
 
 std::list<const Rule*> generate_rules(int num_of_rules, bool print_rules = false){
     std::list<const Rule *> rule_table;
@@ -130,7 +128,7 @@ std::pair<std::pair<size_t, long double>, std::pair<size_t, long double>> run_si
                   "Estimated Bytes per Rule - " << memory_usage2 / rule_table.size() << std::endl <<
                   std::endl;
 
-        std::cout << "Running time for Regular trie: " << elapsed << "\nRunning time for improved trie: " << elapsed2
+        std::cout << "Running time for Trie of Tries: " << elapsed << "\nRunning time for Tree Trie Epsilon: " << elapsed2
                   << std::endl << std::endl;
     }
     return std::make_pair(std::make_pair(memory_usage1 / rule_table.size(), elapsed),
@@ -153,18 +151,24 @@ void run_tests(int num_of_experiments = 10, std::ostream& output = std::cout,
         average_runtime2 += test_results.second.second / num_of_experiments;
     }
     if(verbose){
-        output << "\nAverage Results for " << num_of_experiments << " Experimets:\n" <<
+        output << "\nAverage Results for " << num_of_experiments << " Experiments:\n" <<
                   "Trie of Tries:\n Bytes per Rule - " << average_per_rule1 <<
                   "\n Runtime - " << average_runtime1 << std::endl <<
                   "Epsilon Tree Trie:\n Bytes per Rule - " << average_per_rule2 <<
                   "\n Runtime - " << average_runtime2  << std::endl;
     }else{
-        output << average_per_rule1 << average_runtime1 << average_per_rule2 << average_runtime2 << std::endl;
+        output << average_per_rule1 << " " <<  average_runtime1 << " " <<
+                  average_per_rule2 << " "<< average_runtime2 << std::endl;
     }
 
 }
 
 int main() {
-    run_tests(10, std::cout, 50000, 1000, true, false, false, true);
+    std::ofstream file;
+    file.open("test.txt");
+    for(int i = 0; i < 100000; i  += 10000){
+        run_tests(2, file, 50000, 1000, false, false, false, true);
+    }
+    file.close();
     return 0;
 }
