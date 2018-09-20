@@ -6,7 +6,7 @@
 #include <string.h>
 #include "rules.h"
 #include "data_structures.h"
-
+#include <fstream>
 
 std::list<const Rule*> generate_rules(int num_of_rules, bool print_rules = false){
     std::list<const Rule *> rule_table;
@@ -198,7 +198,7 @@ std::string ipv4_to_binary(std::string ip_address){
     return binary_ip;
 }
 
-const Rule* create_rule_from_file(std::string line,int priority){
+const Rule* create_rule_from_line(std::string line,int priority){
     std::string del= ",",protocol;
     std::string source_ip,source_ip_binary,dest_ip_or_source_offset,source_offset,dest_ip="",dest_ip_binary;
     std::string dest_offset_or_source_port,dest_offset="",source_port_range,dest_port_or_port_range;
@@ -221,8 +221,8 @@ const Rule* create_rule_from_file(std::string line,int priority){
     if(dest_ip==""){
         dest_ip=line.substr(0,line.find(del));
         line.erase(0, line.find(del) + del.length());
-        dest_ip_binary=ipv4_to_binary(dest_ip);
     }
+    dest_ip_binary=ipv4_to_binary(dest_ip);
     dest_offset_or_source_port=line.substr(0,line.find(del));
     line.erase(0, line.find(del) + del.length());
     if(dest_offset_or_source_port.find("-")==std::string::npos){
@@ -254,13 +254,57 @@ const Rule* create_rule_from_file(std::string line,int priority){
     protocol=line;
     return new Rule(source_ip_binary,dest_ip_binary,source_port_start,source_port_end,dest_port_start,dest_port_end,protocol,priority,std::to_string(priority));
 }
+const PacketHeader* create_header_from_line(std::string line){
+    std::string del= ",",protocol;
+    std::string source_ip,source_ip_binary,dest_ip="";
+    int dest_port;
+    int source_port;
+    source_ip=line.substr(0,line.find(del));
+    line.erase(0, line.find(del) + del.length());
+    unsigned int s1=atoi(source_ip.c_str());
+    source_ip=convertToBinary(s1);
+    dest_ip=line.substr(0,line.find(del));
+    unsigned int s2=atoi(dest_ip.c_str());
+    line.erase(0, line.find(del) + del.length());
+    dest_ip=convertToBinary(s2);
+    source_port=std::stoi(line.substr(0,line.find(del)));
+    line.erase(0, line.find(del) + del.length());
+    dest_port=std::stoi(line.substr(0,line.find(del)));
+    line.erase(0, line.find(del) + del.length());
+    protocol=line;
+    return new PacketHeader(source_ip,dest_ip,source_port,dest_port,protocol);
+}
+
+std::list<const PacketHeader*> headers_from_file(std::ifstream* file){
+    std::string line;
+    std::list<const PacketHeader*> header_list;
+    while (getline(*file, line))
+    {
+       header_list.push_back(create_header_from_line(line));
+    }
+    return header_list;
+}
+std::list<const Rule*> rules_from_file(std::ifstream* file){
+    std::string line;
+    std::list<const Rule*> rules_list;
+    int priority=0;
+    while (getline(*file, line))
+    {
+        rules_list.push_back(create_rule_from_line(line,priority));
+        priority++;
+    }
+    return rules_list;
+}
 
 
 int main() {
+    std::list<const PacketHeader*> cate_header_list;
+    std::list<const Rule*> cate_rules_list;
+    std::ifstream file1(("C:\\Users\\rubi\\ClionProjects\\SwitchesNRouters\\5000-rules.txt")),file2("C:\\Users\\rubi\\ClionProjects\\SwitchesNRouters\\5000-headers.txt");
+    cate_header_list=headers_from_file(&file2);
+    cate_rules_list=rules_from_file(&file1);
     std::ofstream file;
-    file.open("test.txt");
-    std::string test_line("207.80.32.18, 48.120.181.150 , 0-65535 ,61200 , 61209 ,6");
-    create_rule_from_file(test_line,1);
+    file.open("tests.txt");
     for(int i = 0; i < 100000; i  += 10000){
         run_tests(2, file, 50000, 1000, false, false, false, true);
     for(int rule_number = 0; rule_number < 30000; rule_number  += 1000){
@@ -268,4 +312,5 @@ int main() {
     }
     file.close();
     return 0;
+}
 }
