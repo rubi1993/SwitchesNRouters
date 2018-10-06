@@ -137,23 +137,26 @@ std::pair<std::pair<double, long double>, std::pair<double, long double>> run_si
                           std::make_pair(memory_usage2, elapsed2));
 }
 
-void run_tests_pure_data(std::list<const Rule*> rule_table,std::list<const PacketHeader*>
-        header_list ,int num_of_experiments = 10,
+void run_tests_pure_data(std::list<const Rule*> rule_table, std::list<const PacketHeader*> header_list,
         std::ostream& output =  std::cout,
-int num_of_rules = 10000, int num_of_headers = 1000,
-bool verbose = false, bool print_rules = false,
-bool print_headers = false, bool print_summaries= false)
+        int num_of_rules = 10000, int num_of_headers = 1000,
+        bool verbose = false, bool print_rules = false,
+        bool print_headers = false, bool print_summaries= false)
 {
     double average_memory1 = 0, average_memory2 = 0;
     long double average_runtime1 = 0, average_runtime2 = 0;
+    while(rule_table.size() > num_of_rules)
+    {
+        rule_table.pop_back();
+    }
     auto test_results = run_single_test(rule_table, header_list, print_summaries);
-    average_memory1 += test_results.first.first / num_of_experiments;
-    average_memory2 += test_results.second.first / num_of_experiments;
-    average_runtime1 += test_results.first.second / num_of_experiments;
-    average_runtime2 += test_results.second.second / num_of_experiments;
+    average_memory1 += test_results.first.first;
+    average_memory2 += test_results.second.first;
+    average_runtime1 += test_results.first.second;
+    average_runtime2 += test_results.second.second;
     if (verbose)
     {
-        output << "\nAverage Results for " << num_of_experiments << " Experiments:\n" <<
+        output << "\nResults for single experiment:\n" <<
                "Trie of Tries:\n Estimated Memory - " << average_memory1 <<
                "\n Bytes per Rule - " << average_memory1 / num_of_rules << std::endl <<
                "\n Runtime - " << average_runtime1 << std::endl <<
@@ -192,7 +195,7 @@ void run_tests(int num_of_experiments = 10, std::ostream& output = std::cout,
                   "\n Bytes per Rule - " << average_memory2 / num_of_rules << std::endl <<
                   "\n Runtime - " <<  average_runtime2 << std::endl;
     }else{
-        output << num_of_rules << " " << average_memory1 << " " <<  average_runtime1 << " " <<
+        output << num_of_rules << " " << average_memory1 << " " << average_runtime1 << " " <<
                                          average_memory2 << " "<< average_runtime2 << std::endl;
     }
 }
@@ -330,18 +333,18 @@ std::list<const Rule*> rules_from_file(std::ifstream* file){
 int main() {
     std::list<const PacketHeader*> cate_header_list;
     std::list<const Rule*> cate_rules_list;
-    std::ifstream file1(("C:\\Users\\rubi\\ClionProjects\\SwitchesNRouters\\5000-rules.txt")),file2("C:\\Users\\rubi\\ClionProjects\\SwitchesNRouters\\5000-headers.txt");
+    std::ifstream file1(("new_rule_set.txt")),file2("5000-headers.txt");
     cate_header_list=headers_from_file(&file2);
     cate_rules_list=rules_from_file(&file1);
+    file1.close();
+    file2.close();
     std::ofstream file;
     file.open("tests_pure_set.txt");
-    for(int i = 0; i < 100000; i  += 10000){
-        run_tests_pure_data(cate_rules_list,cate_header_list,2, file, 50000, 1000, false, false,
+    for(int i = 0; i < 100000; i  += 5000){
+        run_tests_pure_data(cate_rules_list,cate_header_list, file, i, 5000, false, false,
                 false, true);
-    for(int rule_number = 0; rule_number < 30000; rule_number  += 1000){
-        run_tests_pure_data(cate_rules_list,cate_header_list,10, file, rule_number, 1000, false, false, false, true);
     }
     file.close();
     return 0;
-    }
 }
+
