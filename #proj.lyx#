@@ -95,8 +95,8 @@ Abstract
 \end_layout
 
 \begin_layout Standard
-In this article we wish to compare the results of Hierarchical search structure
- that were suggested by Og̃uzhan Erdem , Hoang Le and Viktor K.
+In this article we wish to examine the performance of the Hierarchical search structure
+ suggested by Og̃uzhan Erdem , Hoang Le and Viktor K.
  Prasanna 
 \begin_inset CommandInset href
 LatexCommand href
@@ -106,11 +106,11 @@ target "https://ieeexplore.ieee.org/document/6195565/"
 \end_inset
 
  .
- They claimed that the original Hierarchical search structure has two main
- disadvantages, backtracking and inefficient memory usage due to variation
+ They claimed that the regular Hierarchical search structure "Trie of Tries" has two main
+ disadvantages: backtracking and inefficient memory usage due to variation
  in size of the trie nodes.
- They proposed a clustering algorithm that partition the rule database into
- a fixed number of clusters that prevents backtracking.
+ They proposed a clustering algorithm that partitions the rule database into
+ a fixed number of clusters that prevent backtracking.
  They have also proposed a variant of the trie tree, called 
 \begin_inset Formula $T_{\epsilon}$
 \end_inset
@@ -138,9 +138,9 @@ Introduction
 \end_layout
 
 \begin_layout Standard
-In order to achieve our desired goal we started with implementing the Hierarchic
-al search structure that was proposed in the article, that demanded us to
- create a regular trie tree (a tree with one root and left child or right
+In order to achieve our desired goal we implemented the Hierarchic
+al search structure proposed in the article, as well as the regular Trie of Tries structure.
+ First, we created a regular trie structure (a tree with one root and left child or right
  child if the next bit is zero or one, respectively and a list of fitting
  rules in each node).
  We also had to implement 
@@ -159,7 +159,7 @@ al search structure that was proposed in the article, that demanded us to
 
  simply takes us to the next node - with the same prefix , but with a different
  rule , as said above, it prevents the situation of having multiple rules
- on the same node, causing inefficient memory usage.In order to get both
+ on the same node, causing inefficient memory usage. In order to get both
  of those structure working together - we also implemented a 
 \begin_inset Quotes eld
 \end_inset
@@ -184,24 +184,23 @@ In this project we wish to answer the following questions:
 \begin_layout Itemize
 Is it possible to implement the improved trie structure with a standard
  programming language (C++), without the use of proper hardware that is
- used by common routers (e.g SRAM) and still get adequate results.
+ used by common routers (e.g SRAM) and still get adequate results?
 \end_layout
 
 \begin_layout Itemize
-Are the results reliable? We wish to test both of the original trie tree
- and both of the improved and compare them in order to achieve similar efficienc
-y ratio as the original researches presented.
+Are the results reliable? We wish to test both the original Trie of Tries
+ and the improved Epsilon Tree Trie structure desribed in the article, and compare their performance.
 \end_layout
 
 \begin_layout Itemize
-Does a modification in the rules database will change the results? We wish
+Does a modification in the rules database change the results? We wish
  to test the algorithm on a different databases of rules (uniform distribution
- databases and databases that was used by other researches).
+ databases and databases used by other researches).
 \end_layout
 
 \begin_layout Itemize
-Is there any improvement we can suggest to be added to improved algorithm?
- Or on the other hand, is there some feature in the improved algorithm that
+Is there any improvement we can suggest to be added to the "improved" algorithm?
+ Or on the other hand, is there some feature in the "improved" algorithm that
  we think could be dismissed because it is unnecessary for achieving good
  results.
 \end_layout
@@ -286,8 +285,8 @@ The stage one of the tree is simply a binary search tree (BST) and it is
 \begin_inset Newline newline
 \end_inset
 
-As mention before, using the cluster algorithm causes the prefixes in any
- cluster to be pairwise disjoint,hence , extending the prefixes to a same
+As mentioned before, using the cluster algorithm causes the prefixes in any
+ cluster to be pairwise disjoint,hence , extending the prefixes to the same
  length should not cause overlapping.
 \end_layout
 
@@ -303,13 +302,13 @@ Stage Two Of The Structure (DA tree)
 \end_layout
 
 \begin_layout Standard
-In previous paragraph we created the first stage of the structure,now each
+In the previous paragraph we created the first stage of the structure, now each
  node we created in previous stage is connected to a DA trie.
- Therefore, in each cluster, the number of DA tries are equals to the number
+ Therefore, in each cluster, the number of DA tries equal the number
  of SA prefixes.
  Each prefix node of a DA trie stores at least one rule.
  In this structure each overlapped rule is stored in nodes rather than pointing
- to a list of these rules, this structure is called, as mention above 
+ to a list of these rules, this structure is called, as mentioned above 
 \begin_inset Formula $T_{\epsilon}$
 \end_inset
 
@@ -336,10 +335,10 @@ Path Compression (PC)
  in order to keep record of the nodes that were deleted , each node must
  store a skip value (SV) - representing the number of bits that were skipped
  and bit string (BS) - representing the exact bits that were skipped.In our
- tests we deduce that the Path Compression decrease significantly the number
- of nodes traversed through the trie - and the reason is quite straight
- forward - instead of traversing through nodes in the tree with only one
- child that doesn't contain any rule within , u just skip them using BV,SV
+ tests we deduce that the Path Compression significantly decreases the number
+ of nodes traversed - and the reason is quite straight
+ forward - instead of traversing nodes in the trie with only one
+ child that don't contain any rule within , you just skip them using BV,SV
  - but on the other hand it appears that there is a space - time tradeoff
  , because BV,SV require every node to preserve some amount of bits in order
  to store those two fields.
@@ -363,28 +362,26 @@ Multiprocessing
 \end_layout
 
 \begin_layout Standard
-in order to achieve better results under this algorithm, one must use multiproce
-ssing over the clusters - which were created the way they created only for
+In order to achieve better results under this algorithm, one must use parallel processing
+over the clusters - which were created the way they created only for
  that reason - in each cluster there are no two rules that one is a prefix
  of the other one, in other words - every two rules in a cluster are not
  a proper prefix of one another.
- in order to make sure there are no backtracking within each cluster, and
+ In order to make sure there are no backtracking within each cluster, and
  every cluster can be processed separately and independently by the processors.
- this method of working appears to be extremely efficient when dealing with
+ This method of working appears to be extremely efficient when dealing with
  high number of rules, which causes a regular trie tree be extremely complex
- and the traverse over it is very inefficient.
+ and the traversal over it is very inefficient.
  A clusters structure like the one that was presented in the article turns
- out to be very efficient for those cases.
- if the clusters that produced are tend to be balance the running time can
- by the number of CPU's that are are been used by the improved trie algorithm.
+ out to be very efficient for these cases.
 \begin_inset Newline newline
 \end_inset
 
 We used Ptheard C library in order to execute the search for a matching
- rule in parallel, each thread got different cluster, the same rule , and
- a shared memory that contained the best rule find by one of the threads
+ rule in parallel, each thread got a different cluster, the same header , and
+ a shared memory that contained the best rule found by one of the threads
  until now.
- A mutex was needed in order to make sure that the shared variable is used
+ A mutex lock was employed to make sure that the shared variable is used
  properly.
  
 \end_layout
@@ -394,8 +391,8 @@ Main advantages
 \end_layout
 
 \begin_layout Standard
-As the writers of the article have mention , the advantages they seek to
- accomplish compare to the regular trie were skipping the backtracking part,
+As the writers of the article mention, the advantages they seek to
+ attain when compared to a regular Trie of Tries are skipping the backtracking part,
  which 
 \begin_inset Quotes eld
 \end_inset
@@ -406,10 +403,10 @@ costs
 
  a lot and makes it a lot less comfortable to work with multiprocessing
  method.
- the clustering algorithm indeed prevented the situation of backtracking
+ the clustering algorithm indeed prevents the situation of backtracking
  , even though it demands us to examine multiple objects (clusters) - we
  don't mind - because all of this is intended to be done in parallel.
- One more other thing that were prevented is the inefficiency with node
+ One more other thing that is prevented is the inefficiency with node
  space, because of the 
 \begin_inset Quotes eld
 \end_inset
@@ -418,9 +415,9 @@ unlimited
 \begin_inset Quotes erd
 \end_inset
 
- list of rules size, the nodes could get bigger and bigger and a limit is
+ size of the rule list in each node, the nodes could get bigger and bigger and a limit is
  needed to be set, therefore, the authors have simplified this matter by
- setting a limit to the number of nodes that might be created into specific
+ setting a limit to the number of rules that might be inserted into a single
  node, otherwise an 
 \begin_inset Quotes eld
 \end_inset
@@ -439,13 +436,14 @@ Main disadvantages
 
 \begin_layout Standard
 During our research and while implementing the algorithm we tried to inspect
- and give an estimation over the added features and came to some conclusions
+ and give an estimation of the effectiveness of the additional features of the Epsilon Tree Trie 
+ and came to some conclusions
  in the matter.
 \begin_inset Newline newline
 \end_inset
 
-When we performed the Path Compress we noticed that there is probably no
- other way of compressing the tree but to do it on the end of the creation
+When implelemnting the Path Compress process, we noticed that it is relatively expensive
+ and therefore can only feasibly be done once, after the initial rule database is isnerted into the structure
  of the tree (rather than on-the-fly , while adding rule by rule) therefore
  it causes some drawbacks - first it is very time expensive , as will be
  shown below in the results section, the running time of tree construction
@@ -463,10 +461,10 @@ visited nodes
 \end_inset
 
  is quite the same with or without PC.
- One other major disadvantages that we encountered is the fact that modifying
- a tree structure,for example, adding rule after compressing is becoming
- more sophisticated and it's a shame that it's not that easy compare to
- the regular tree, in which adding and removing nodes or rules can be on
+ One other major disadvantage that we encountered is the fact that modifying
+ a tree structure, for example, adding rule after compressing is becoming
+ more sophisticated and it's a shame that it's not that easy compared to
+ the regular structure, in which adding and removing nodes or rules can be on
  the fly.
 \end_layout
 
@@ -475,11 +473,11 @@ Experiments & Results
 \end_layout
 
 \begin_layout Standard
-we have tested the improved trie tree after fully implementing it over couple
+we have tested the improved tree trie after fully implementing it over couple
  of the databases.
- We wanted to make sure it performs good over all kinds of data sets, therefore
- we used a random generator in order to create rules and header to be inspect,
- also we used pre-made databases that were used over CATE (Classification
+ We wanted to make sure it performs well over all kinds of data sets, therefore
+ we used a generator in order to create rules and headers to be inspected,
+ both from a random uniform distribution and the test cases provided by CATE (Classification
  Algorithms Testing Environment)
 \begin_inset CommandInset href
 LatexCommand href
@@ -530,17 +528,16 @@ Memory Usage
 \end_layout
 
 \begin_layout Standard
-the memory usage of the regular trie (when examining the size of a specific
- node) is growing Linearly as a parameter of the number of rules , on the
- other hand ,the size of a node in the improved algorithm is almost constant
- , what makes a lot of sense because the regular nodes will just keep adding
- rules to their database (causing they're size to increase dramticlly) while
+The estimated memory usage of the regular trie (produced by examining the size of the largest
+ nodes in both levels of the structure and multiplying those sizes by the total number of nodes)
+ grows linearly with the number of rules. On the
+ other hand, the estimated memory usage of the new structure is almost constant by comparison
+ , which makes a lot of sense because the regular nodes will just keep adding
+ rules to their lists (causing the required memory for all nodes to increase dramatically) while
  in the improved method there is a one-to-one relationship between nodes
- and rules, therefore adding a banch of rules will not change segnificantly
- the size of a specific node , actually, the only reason why the nodes weights
- a little bit more when reaching high number of rules is because of the
- 'path compress' feature which adds bits where needed into nodes internal
- data, but still - it barely affects the size of a node.
+ and rules, therefore adding a bunch of rules will not significantly alter
+ the size of a specific node, just add a bunch of nodes of the same size, 
+ which wouldn't increase the memory demands nearly as much.
 \end_layout
 
 \begin_layout Subsubsection
@@ -576,11 +573,10 @@ Running Time
 \end_layout
 
 \begin_layout Standard
-as you can see , the tree trie epsilon seems to perform better on a fully
- randomized data, and as the database gets bigger the differences are just
- getting bigger, if judging by this tests, it seems that the authors of
- the article did managed to achieve an improved algorithm as were presented
- by they're tests.
+As you can see, the Tree Trie Epsilon structure seems to perform better on uniformly
+ random rules, and as the rule database gets larger so does the difference in runtime.
+ Judging by these results, it seems that the authors of
+ the article managed to achieve a real improvement theat only gets better with more rules.
 \end_layout
 
 \begin_layout Subsection
@@ -588,18 +584,16 @@ Results Over Realistic Data
 \end_layout
 
 \begin_layout Standard
-in this section we took some pre-made data from CATE and run our tests over
- it and got surprising results that rise a question about the improved algorithm
-, and it's achievements over real data - in actual router usage.
+In this section we took some pre-made data from CATE and run our tests over
+ it and got surprising results that raise questions about the proposed structure
+, and it's performance in "real" conditions.
 \end_layout
 
 \begin_layout Standard
-in terms of memory it seems like the upgraded algorithm still performs better
- than the regular Trie, because of the reasons we mentioned above - it's
- hard to think of a reason that a particular node will be worse (in terms
- of memory consumption) in the improved Trie over the regular Trie, nevertheless
- -as we will show below, in terms of running time it seems that on realistic
- data the old fashion trie performs better than the improved one.
+In terms of memory it seems like the upgraded algorithm still performs better
+ than the regular Trie, because of the same reasons we mentioned above. Nevertheless
+ , as we will show below, in terms of running time it seems that on realistic
+ data the old-fashioned Trie of Tries performs better than the new structure.
 \end_layout
 
 \begin_layout Subsubsection
@@ -672,10 +666,11 @@ Running Time
 \end_layout
 
 \begin_layout Standard
-here on the data taken from CATE database it seems like the regular trie
+Here on the data taken from CATE database it seems like the regular trie
  keeps almost constant , low running time, but on the other hand our improved
  algorithm is getting much worse when raising the number of rules, and didn't
- managed to be faster than the original one at any point of the test.
+ manage to be faster than the original one at any point of the test. This is very surprising,
+ and it isn't intuitively obvious why this would be the case. 
 \end_layout
 
 \begin_layout Section
@@ -685,8 +680,8 @@ Conclusion
 \begin_layout Standard
 our goals were to deeply examine the introduced algorithm , so first we
  implemented it carefully, using all the features that were introduced by
- the authors, then we created our own database based on random choice (which
- may or may not reflect on real situations in real world) we run tests and
+ the authors, then we created our own rule database based on randomly generated (which
+ may or may not reflect on real situations in the real world) we run tests and
  got some promising results, on the other hand, when testing on more reliable
  data we got some disturbing results that undermined the efficiency of the
  Tree Trie Epsilon - the algorithm that the were developed in the article
@@ -702,8 +697,8 @@ our goals were to deeply examine the introduced algorithm , so first we
 \end_layout
 
 \begin_layout Standard
-Although the results were inconclusive we find this algorithm really interesting
- and needed , and we assume that even if it performs
+Although the results were inconclusive we find this new structure to be very promising. 
+The surprising runtime results when using the CATE test case rules are an obvious direction for further analysis.
 \end_layout
 
 \end_body
