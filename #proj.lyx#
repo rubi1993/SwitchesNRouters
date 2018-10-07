@@ -672,11 +672,10 @@ Running Time
 \end_layout
 
 \begin_layout Standard
-the data taken from CATE database it seems like the regular trie keeps almost
- constant , low running time, but on the other hand our improved algorithm
- is getting much worse when raising the number of rules, and didn't managed
- to be faster than the original one at any point of the test, showing that
- the improved algorithm wasn't preferable for all size of real-world traffic.
+here on the data taken from CATE database it seems like the regular trie
+ keeps almost constant , low running time, but on the other hand our improved
+ algorithm is getting much worse when raising the number of rules, and didn't
+ managed to be faster than the original one at any point of the test.
 \end_layout
 
 \begin_layout Section
@@ -695,21 +694,16 @@ our goals were to deeply examine the introduced algorithm , so first we
  as the authors suggested in their article, so we are finding it hard to
  believe that the results were faulty , but we keep in mind the maybe some
  fault led to this results, and further research needs to be made -maybe
- on some real-world traffic from other sources, maybe on an implemented
- algorithm used on an actual router - because we still performed those tests
- on a virtual environment (PC) and not on a real network hardware devices
- - maybe some inaccuracies were made that couldn't be prevented using a
- computer.
+ on some real traffic from other sources, maybe on an implemented algorithm
+ used on an actual router - because we still performed those tests on a
+ virtual environment (PC) and not on a real network hardware devices - maybe
+ some inaccuracies were made that couldn't be prevented using a computer.
  
 \end_layout
 
 \begin_layout Standard
 Although the results were inconclusive we find this algorithm really interesting
- and needed , and we assume that even if it performs not so well on a real
- data , it is still valuable because of the memory advantages it gives,
- and because we believe that fixes can be made in order to make it more
- suitable for real world traffic.
- 
+ and needed , and we assume that even if it performs
 \end_layout
 
 \end_body

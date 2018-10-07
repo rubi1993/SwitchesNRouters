@@ -139,7 +139,7 @@ std::pair<std::pair<double, long double>, std::pair<double, long double>> run_si
 
 void run_tests_pure_data(std::list<const Rule*> rule_table, std::list<const PacketHeader*> header_list,
         std::ostream& output =  std::cout,
-        int num_of_rules = 10000, int num_of_headers = 1000,
+        int num_of_rules = 5000, int num_of_headers = 1000,
         bool verbose = false, bool print_rules = false,
         bool print_headers = false, bool print_summaries= false)
 {
@@ -333,14 +333,14 @@ std::list<const Rule*> rules_from_file(std::ifstream* file){
 int main() {
     std::list<const PacketHeader*> cate_header_list;
     std::list<const Rule*> cate_rules_list;
-    std::ifstream file1(("new_rule_set.txt")),file2("5000-headers.txt");
+    std::ifstream file1(("5000-rules.txt")),file2("5000-headers.txt");
     cate_header_list=headers_from_file(&file2);
     cate_rules_list=rules_from_file(&file1);
     file1.close();
     file2.close();
     std::ofstream file;
-    file.open("tests_pure_set.txt");
-    for(int i = 0; i < 100000; i  += 5000){
+    file.open("tests_pure_set_with5000_rules.txt");
+    for(int i = 0; i < 5000; i  += 100){
         run_tests_pure_data(cate_rules_list,cate_header_list, file, i, 5000, false, false,
                 false, true);
     }
